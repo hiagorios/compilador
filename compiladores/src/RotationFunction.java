@@ -6,13 +6,12 @@ public class RotationFunction {
     mudando-se apenas os argumentos passados como parâmetros. */
 
     public static double[][] cocoRandUniforme(int dim, long inseed) {
-        double[][] r = new double[1][dim];
-//        double[][] r = new double[dim][dim];
-//        for (int i = 0; i < dim; i++) {
-//            for (int j = 0; j < dim; j++) {
-//                r[i][j] = 1;
-//            }
-//        }
+        double[][] r = new double[dim][dim];
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
+                r[i][j] = 1;
+            }
+        }
 
         long aktseed;
         int tmp;

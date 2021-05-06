@@ -18,8 +18,8 @@ class Weierstrass {
         }
 
         double[] z = generateZ(0.01, x);
-        System.out.println("Vector z");
-        System.out.println(Arrays.toString(z));
+//        System.out.println("Vector z");
+//        System.out.println(Arrays.toString(z));
 
         //Calculando f0
         double f0 = 0.0;
@@ -30,7 +30,7 @@ class Weierstrass {
         //Calculando os somatórios
         double sum = 0.0;
 
-        for (int i = 1; i <= dimension; i++) {
+        for (int i = 0; i < dimension; i++) {
             for (int k = 0; k <= kFinal; k++) {
                 sum += (1 / Math.pow(2, k)) * Math.cos(pi2 * Math.pow(3, k) * (z[i] + 0.5));
             }
@@ -74,13 +74,12 @@ class Weierstrass {
         double[][] matrixQ = RotationFunction.cocoRandUniforme(x.length, 1000000);
 //        System.out.println("Matrix Q");
 //        System.out.println(Arrays.deepToString(matrixQ));
-        double[] rx = multiply(matrixR, x);
-        System.out.println("Vector Rx");
-        System.out.println(Arrays.toString(rx));
+        double[] rx = multiply(matrixR, x); //3x3 3x1 por exemplo
+//        System.out.println("Vector Rx");
+//        System.out.println(Arrays.toString(rx));
         double[] tosz = tosz(rx);
-        System.out.println("Vector Tosz");
-        System.out.println(Arrays.toString(tosz));
-
+//        System.out.println("Vector Tosz");
+//        System.out.println(Arrays.toString(tosz));
         return multiply(matrixQ, tosz);
     }
 
@@ -107,7 +106,7 @@ class Weierstrass {
     public double fpen(double[] x) {
         double d = x.length;
         double sum = 0.0;
-        for (int i = 1; i <= d; i++) {
+        for (int i = 0; i < d; i++) {
             double max = Math.abs(x[i]) - 5;
             sum += max > 0 ? Math.pow(max, 2) : 0;
         }
