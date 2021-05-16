@@ -1,3 +1,5 @@
+package ahoImplementation;
+
 import java.io.IOException;
 
 // Esse cara é um Analisador sintático preditivo = programa com um procedimento para cada não-terminal

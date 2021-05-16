@@ -4,10 +4,10 @@ class Weierstrass {
 
     public static void main(String[] args) {
         Weierstrass w = new Weierstrass();
-        System.out.println(w.calculate(new double[]{0, 0, 0}));
+        System.out.println(w.calculate(new double[]{0.02, 4.1}));
     }
 
-    public double calculate(double[] x) {
+    double calculate(double[] x) {
         double pi2 = Math.PI * 2.0;
         double kFinal = 11;
         int dimension = x.length;
@@ -45,11 +45,11 @@ class Weierstrass {
         return result;
     }
 
-    public double[] generateZ(double alfa, double[] x) {
+    double[] generateZ(double alfa, double[] x) {
         double[][] matrixAlfa = generateMatrixAlfa(alfa, x.length);
 //        System.out.println("Matrix Alfa");
 //        System.out.println(Arrays.deepToString(matrixAlfa));
-        double[][] matrixR = RotationFunction.cocoRandUniforme(x.length, 13);
+        double[][] matrixR = cocoRandUniforme(x.length, 13);
 //        System.out.println("Matrix R");
 //        System.out.println(Arrays.deepToString(matrixR));
         double[][] rAlfa = multiply(matrixR, matrixAlfa);
@@ -61,7 +61,7 @@ class Weierstrass {
         return multiply(rAlfa, qTosz);
     }
 
-    public double[][] generateMatrixAlfa(double alfa, int dimension) {
+    double[][] generateMatrixAlfa(double alfa, int dimension) {
         double[][] matrixAlfa = new double[dimension][dimension];
 
         for (int i = 0; i < dimension; i++) {
@@ -70,8 +70,8 @@ class Weierstrass {
         return matrixAlfa;
     }
 
-    public double[] generateQTosz(double[] x, double[][] matrixR) {
-        double[][] matrixQ = RotationFunction.cocoRandUniforme(x.length, 1000000);
+    double[] generateQTosz(double[] x, double[][] matrixR) {
+        double[][] matrixQ = cocoRandUniforme(x.length, 1000000);
 //        System.out.println("Matrix Q");
 //        System.out.println(Arrays.deepToString(matrixQ));
         double[] rx = multiply(matrixR, x); //3x3 3x1 por exemplo
@@ -83,7 +83,7 @@ class Weierstrass {
         return multiply(matrixQ, tosz);
     }
 
-    public double[] tosz(double[] input) {
+    double[] tosz(double[] input) {
         double[] output = new double[input.length];
 
         for (int i = 0; i < input.length; i++) {
@@ -103,7 +103,7 @@ class Weierstrass {
         return output;
     }
 
-    public double fpen(double[] x) {
+    double fpen(double[] x) {
         double d = x.length;
         double sum = 0.0;
         for (int i = 0; i < d; i++) {
@@ -113,7 +113,7 @@ class Weierstrass {
         return sum;
     }
 
-    public double[][] multiply(double[][] a, double[][] b) {
+    double[][] multiply(double[][] a, double[][] b) {
         double[][] result = new double[a.length][b[0].length];
         for (int row = 0; row < result.length; row++) {
             for (int col = 0; col < result[row].length; col++) {
@@ -126,7 +126,7 @@ class Weierstrass {
         return result;
     }
 
-    public double[] multiply(double[][] matrix, double[] vector) {
+    double[] multiply(double[][] matrix, double[] vector) {
         double[] result = new double[matrix.length];
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
@@ -134,5 +134,65 @@ class Weierstrass {
             }
         }
         return result;
+    }
+
+//    As matrizes R e Q são geradas a partir da função de rotação
+//    randômica, adotando-se um seed de 13 para R e um seed de
+//    10^6 para a função Q, ou seja, a mesma função é usada para ambas,
+//    mudando-se apenas os argumentos passados como parâmetros.
+    static double[][] cocoRandUniforme(int dim, long inseed) {
+        if (inseed == 13) {
+            return new double[][]{
+                    new double[]{0.1, 0.2},
+                    new double[]{0.3, 0.4},
+            };
+        } else {
+            return new double[][]{
+                    new double[]{0.9, 0.8},
+                    new double[]{0.7, 0.6},
+            };
+        }
+//        double[][] r = new double[dim][dim];
+
+//        for (int i = 0; i < dim; i++) {
+//            for (int j = 0; j < dim; j++) {
+//                r[i][j] = 1;
+//            }
+//        }
+//
+//        long aktseed;
+//        int tmp;
+//        long[] rgrand = new long[32];
+//        long aktrand;
+//        int i;
+//
+//        if (inseed < 0)
+//            inseed = -inseed;
+//        if (inseed < 1)
+//            inseed = 1;
+//        aktseed = inseed;
+//        for (i = 39; i >= 0; i--) {
+//            tmp = (int) Math.floor((double) aktseed / (double) 127773);
+//            aktseed = 16807 * (aktseed - tmp * 127773L) - 2836L * tmp;
+//            if (aktseed < 0)
+//                aktseed = aktseed + 2147483647;
+//            if (i < 32)
+//                rgrand[i] = aktseed;
+//        }
+//        aktrand = rgrand[0];
+//        for (i = 0; i < dim; i++) {
+//            tmp = (int) Math.floor((double) aktseed / (double) 127773);
+//            aktseed = 16807 * (aktseed - tmp * 127773L) - 2836L * tmp;
+//            if (aktseed < 0)
+//                aktseed = aktseed + 2147483647;
+//            tmp = (int) Math.floor((double) aktrand / (double) 67108865);
+//            aktrand = rgrand[tmp];
+//            rgrand[tmp] = aktseed;
+//            r[0][i] = (double) aktrand / 2.147483647e9;
+//            if (r[0][i] == 0.) {
+//                r[0][i] = 1e-99;
+//            }
+//        }
+//        return r;
     }
 }
