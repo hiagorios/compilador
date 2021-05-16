@@ -4,11 +4,13 @@ the longest portion of the input (longest match rule). If there is more than one
 expression that matches the longest portion of input (i.e. they all match the same input),
 the generated scanner chooses the expression that appears first in the specification.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+package lexer;
 
-import compiladores.lexer.*;
+import lexer.token.*;
 
 /**
   Classe Lexer para a disciplina de compiladores da Universidade Estadual de Santa Cruz (UESC)
+  Exemplo de uso: java Lexer.class compiladores/src/Weierstrass.java
 */
 %%
 
@@ -19,6 +21,7 @@ import compiladores.lexer.*;
 %unicode
 %line // Habilita contagem de linhas, através da variável yyline
 %column // Habilita contagem de colunas, através da variável yycolumn
+%type Token
 
 /* User code */
 %{
@@ -86,7 +89,6 @@ import compiladores.lexer.*;
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 WhiteSpace     = {LineTerminator} | [ \t\f]+
-CommentContent       = ( [^*] | \*+ [^/*] )*
 Comment = {TraditionalComment} | {EndOfLineComment}
 TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
@@ -124,8 +126,8 @@ Identifier = [:jletter:] [:jletterdigit:]*
   "RuntimeException"  { return keyword(TokenType.RT_EXCEPTION_KEYWORD); }
 
   {Identifier}        { return identifier(yytext()); }
-  {IntegerLiteral}    { return integerLiteral(yytext()); }
-  {LongLiteral}       { return longLiteral(yytext()); }
+  {IntegerLiteral}    { return integerLiteral(Integer.parseInt(yytext())); }
+  {LongLiteral}       { return longLiteral(Long.parseLong(yytext())); }
 
   /* Caractere aspas duplas = inicio de string. Reseta o buffer de string e muda o estado para STRING */
   \"                  { string.setLength(0); yybegin(STRING); }
