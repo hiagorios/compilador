@@ -27,6 +27,10 @@ import lexer.token.*;
 %{
   StringBuffer string = new StringBuffer();
 
+  public boolean isEndOfFile() {
+      return zzAtEOF;
+  }
+
   private Token token(int type) {
     return new Token(type, yyline, yycolumn);
   }

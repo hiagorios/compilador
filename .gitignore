@@ -4,3 +4,4 @@
 out/
 *.iml
 compiladores/src/lexer/jflex
+compiladores/src/yacc.linux
