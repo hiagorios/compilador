@@ -31,16 +31,16 @@ import lexer.token.*;
       return zzAtEOF;
   }
 
-  private Token token(int type) {
+  private Token token(TokenType type) {
     return new Token(type, yyline, yycolumn);
   }
-  private Keyword keyword(int type) {
+  private Keyword keyword(TokenType type) {
     return new Keyword(type, yyline, yycolumn);
   }
-  private LogicalOperator logicalOperator(int type) {
+  private LogicalOperator logicalOperator(TokenType type) {
     return new LogicalOperator(type, yyline, yycolumn);
   }
-  private Operator operator(int type) {
+  private Operator operator(TokenType type) {
     return new Operator(type, yyline, yycolumn);
   }
   private Identifier identifier(String lexeme) {
@@ -55,6 +55,9 @@ import lexer.token.*;
   private LongLiteral longLiteral(long value) {
     return new LongLiteral(yyline, yycolumn, value);
   }
+  private DoubleLiteral doubleLiteral(double value) {
+      return new DoubleLiteral(yyline, yycolumn, value);
+  }
 %}
 
 /* Macros */
@@ -66,10 +69,11 @@ TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
 
 Digit = [0-9]
-DigitOrUnderscore = [_0-9]
-Digits = {Digit} | {Digit} {DigitOrUnderscore}*
+Digits = {Digit}+
+Exponent = [eE] [+-]? [0-9]+
 IntegerLiteral = {Digits}
-LongLiteral = {IntegerLiteral} [Ll]
+LongLiteral = {Digits} [Ll]
+DoubleLiteral = {Digits} {Exponent}? | {Digits} \. {Digits} {Exponent}?
 
 Identifier = [:jletter:] [:jletterdigit:]*
 
@@ -95,11 +99,12 @@ Identifier = [:jletter:] [:jletterdigit:]*
   "return"            { return keyword(TokenType.RETURN_KEYWORD); }
   "void"              { return keyword(TokenType.VOID_KEYWORD); }
   "static"            { return keyword(TokenType.STATIC_KEYWORD); }
-  "RuntimeException"  { return keyword(TokenType.RT_EXCEPTION_KEYWORD); }
+  "RuntimeException"  { return keyword(TokenType.RT_EXCEPTION); }
 
   {Identifier}        { return identifier(yytext()); }
   {IntegerLiteral}    { return integerLiteral(Integer.parseInt(yytext())); }
   {LongLiteral}       { return longLiteral(Long.parseLong(yytext().substring(0,yylength()-1))); }
+  {DoubleLiteral}     { return doubleLiteral(Double.parseDouble(yytext())); }
 
   /* Caractere aspas duplas = inicio de string. Reseta o buffer de string e muda o estado para STRING */
   \"                  { string.setLength(0); yybegin(STRING); }

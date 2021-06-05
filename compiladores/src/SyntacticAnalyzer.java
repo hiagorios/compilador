@@ -1,4 +1,5 @@
 import lexer.Lexer;
+
 import java.io.*;
 
 public class SyntacticAnalyzer {

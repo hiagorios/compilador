@@ -190,7 +190,7 @@ class Weierstrass {
             aktrand = rgrand[tmp];
             rgrand[tmp] = aktseed;
             r[0][i] = (double) aktrand / 2.147483647e9;
-            if (r[0][i] == 0.) {
+            if (r[0][i] == 0) {
                 r[0][i] = 1e-99;
             }
         }
