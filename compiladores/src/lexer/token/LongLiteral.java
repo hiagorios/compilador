@@ -8,4 +8,13 @@ public class LongLiteral extends Token {
         super(TokenType.LONG_LITERAL, line, column);
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "LongLiteral{" +
+                "value=" + value +
+                ", line=" + line +
+                ", column=" + column +
+                '}';
+    }
 }

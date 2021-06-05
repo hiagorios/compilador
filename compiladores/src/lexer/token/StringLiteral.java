@@ -8,4 +8,13 @@ public class StringLiteral extends Token {
         super(TokenType.STRING_LITERAL, line, column);
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "StringLiteral{" +
+                "value='" + value + '\'' +
+                ", line=" + line +
+                ", column=" + column +
+                '}';
+    }
 }

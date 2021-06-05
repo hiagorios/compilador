@@ -2,10 +2,12 @@ import lexer.Lexer;
 import java.io.*;
 
 public class SyntacticAnalyzer {
+//Lexer -> analise caractere a caractere verificando os tokens validos
+//Syntactic -> analise dos tokens em relação a gramática
 
     public static void main(String[] args) {
         Lexer scanner = null;
-        String file = args[1];
+        String file = args[0];
         try {
             FileInputStream stream = new java.io.FileInputStream(file);
             Reader reader = new java.io.InputStreamReader(stream);

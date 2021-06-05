@@ -17,7 +17,7 @@ import lexer.token.*;
 /* Options */
 %class Lexer
 %public // Torna pública a classe gerada
-%debug // Cria um main na classe gerada que espera o nome do arquivo de entrada e imprime mensagens de debug ao parsear
+//%debug // Cria um main na classe gerada que espera o nome do arquivo de entrada e imprime mensagens de debug ao parsear
 %unicode
 %line // Habilita contagem de linhas, através da variável yyline
 %column // Habilita contagem de colunas, através da variável yycolumn
@@ -99,7 +99,7 @@ Identifier = [:jletter:] [:jletterdigit:]*
 
   {Identifier}        { return identifier(yytext()); }
   {IntegerLiteral}    { return integerLiteral(Integer.parseInt(yytext())); }
-  {LongLiteral}       { return longLiteral(Long.parseLong(yytext())); }
+  {LongLiteral}       { return longLiteral(Long.parseLong(yytext().substring(0,yylength()-1))); }
 
   /* Caractere aspas duplas = inicio de string. Reseta o buffer de string e muda o estado para STRING */
   \"                  { string.setLength(0); yybegin(STRING); }

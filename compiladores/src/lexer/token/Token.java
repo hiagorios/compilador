@@ -11,4 +11,13 @@ public class Token {
         this.line = line;
         this.column = column;
     }
+
+    @Override
+    public String toString() {
+        return "Token{" +
+                "type=" + type +
+                ", line=" + line +
+                ", column=" + column +
+                '}';
+    }
 }

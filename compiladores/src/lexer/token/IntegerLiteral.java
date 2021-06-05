@@ -8,4 +8,13 @@ public class IntegerLiteral extends Token {
         super(TokenType.INTEGER_LITERAL, line, column);
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "IntegerLiteral{" +
+                "value=" + value +
+                ", line=" + line +
+                ", column=" + column +
+                '}';
+    }
 }
