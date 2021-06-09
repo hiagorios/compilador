@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 class Weierstrass {
 
     public static void main(String[] args) {
@@ -11,7 +9,7 @@ class Weierstrass {
         double pi2 = Math.PI * 2.0;
         double kFinal = 11;
         int dimension = x.length;
-        double result = 0.0;
+        double result;
 
         if (dimension <= 1) {
             throw new RuntimeException("x dimension cannot be 1 or less");
@@ -49,7 +47,7 @@ class Weierstrass {
         double[][] matrixAlfa = generateMatrixAlfa(alfa, x.length);
 //        System.out.println("Matrix Alfa");
 //        System.out.println(Arrays.deepToString(matrixAlfa));
-        double[][] matrixR = cocoRandUniforme(x.length, 13);
+        double[][] matrixR = cocoRandUniforme(x.length, 13L);
 //        System.out.println("Matrix R");
 //        System.out.println(Arrays.deepToString(matrixR));
         double[][] rAlfa = multiply(matrixR, matrixAlfa);
@@ -71,7 +69,7 @@ class Weierstrass {
     }
 
     double[] generateQTosz(double[] x, double[][] matrixR) {
-        double[][] matrixQ = cocoRandUniforme(x.length, 1000000);
+        double[][] matrixQ = cocoRandUniforme(x.length, 1000000L);
 //        System.out.println("Matrix Q");
 //        System.out.println(Arrays.deepToString(matrixQ));
         double[] rx = multiply(matrixR, x); //3x3 3x1 por exemplo

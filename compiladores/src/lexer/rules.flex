@@ -32,41 +32,39 @@ import lexer.token.*;
   }
 
   private Token token(TokenType type) {
-    return new Token(type, yyline, yycolumn);
+    return new Token(type, yyline+1, yycolumn);
   }
   private Keyword keyword(TokenType type) {
-    return new Keyword(type, yyline, yycolumn);
+    return new Keyword(type, yyline+1, yycolumn);
   }
   private LogicalOperator logicalOperator(TokenType type) {
-    return new LogicalOperator(type, yyline, yycolumn);
+    return new LogicalOperator(type, yyline+1, yycolumn);
   }
   private Operator operator(TokenType type) {
-    return new Operator(type, yyline, yycolumn);
+    return new Operator(type, yyline+1, yycolumn);
   }
   private Identifier identifier(String lexeme) {
-    return new Identifier(yyline, yycolumn, lexeme);
+    return new Identifier(yyline+1, yycolumn, lexeme);
   }
   private StringLiteral stringLiteral(String value) {
-    return new StringLiteral(yyline, yycolumn, value);
+    return new StringLiteral(yyline+1, yycolumn, value);
   }
   private IntegerLiteral integerLiteral(int value) {
-    return new IntegerLiteral(yyline, yycolumn, value);
+    return new IntegerLiteral(yyline+1, yycolumn, value);
   }
   private LongLiteral longLiteral(long value) {
-    return new LongLiteral(yyline, yycolumn, value);
+    return new LongLiteral(yyline+1, yycolumn, value);
   }
   private DoubleLiteral doubleLiteral(double value) {
-      return new DoubleLiteral(yyline, yycolumn, value);
+      return new DoubleLiteral(yyline+1, yycolumn, value);
   }
 %}
 
 /* Macros */
-LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
-WhiteSpace     = {LineTerminator} | [ \t\f]+
-Comment = {TraditionalComment} | {EndOfLineComment}
-TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
-EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
+LineBreak = \r|\n|\r\n
+InputChar = [^\r\n]
+WhiteSpace     = {LineBreak} | [ \t\f]+
+Comment     = "//" {InputChar}* {LineBreak}?
 
 Digit = [0-9]
 Digits = {Digit}+
@@ -99,6 +97,7 @@ Identifier = [:jletter:] [:jletterdigit:]*
   "return"            { return keyword(TokenType.RETURN_KEYWORD); }
   "void"              { return keyword(TokenType.VOID_KEYWORD); }
   "static"            { return keyword(TokenType.STATIC_KEYWORD); }
+  "String"            { return keyword(TokenType.STRING_KEYWORD); }
   "RuntimeException"  { return keyword(TokenType.RT_EXCEPTION); }
 
   {Identifier}        { return identifier(yytext()); }
@@ -164,4 +163,4 @@ Identifier = [:jletter:] [:jletterdigit:]*
 
 /* error fallback: faz match em qualquer estado léxico e de qualquer caractere */
 /* Mas como é a última regra e só lê um caractere, só faz match se nenhuma outra fizer */
-[^]                   { throw new Error("Illegal character <" + yytext() + ">"); }
+[^]                   { throw new Error("Syntax error in <" + yytext() + ">, line " + yyline + " column " + yycolumn); }
