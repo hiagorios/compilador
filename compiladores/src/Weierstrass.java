@@ -2,7 +2,7 @@ class Weierstrass {
 
     public static void main(String[] args) {
         Weierstrass w = new Weierstrass();
-        System.out.println(w.calculate(new double[]{0.02, 4.1}));
+        System.out.println(w.calculate(new double[]{0.0, 0.0}));
     }
 
     double calculate(double[] x) {

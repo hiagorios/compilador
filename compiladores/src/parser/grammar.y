@@ -18,99 +18,163 @@ import java.util.StringTokenizer;
 %}
 
 /* YACC Declarations */
-%token NUM
+%token <DoubleLiteral> DOUBLE_LITERAL
+%token <Identifier> IDENTIFIER
+%token <IntegerLiteral> INTEGER_LITERAL
+%token <Keyword> KEYWORD
+%token <LogicalOperator> LOGICAL_OPERATOR
+%token <LongLiteral> LONG_LITERAL
+%token <Operator> OPERATOR
+%token <StringLiteral> STRING_LITERAL
+%token <Token> TOKEN
+
 %left '-' '+'
 %left '*' '/'
 %left NEG /* negation--unary minus */
 %right '^' /* exponentiation */
+/*
+"!="
+"=="
+"<" 
+"<="
+">" 
+">="
+"+="
+"-="
+"++"
+"--"
+"+" 
+"-" 
+"*" 
+"/" 
+"=" 
+"?"
+":"
+"("
+")"
+"{"
+"}"
+"["
+"]"
+";"
+","
+"."
+*/
 
 /* Gramática */
 %%
 program:
-    'class' class_name '{' class_body '}'
-;
-class_name:
-    identifier
+    'class' IDENTIFIER '{' class_body '}'
 ;
 class_body:
-    | class_member class_body
+    /* empty string */
+    | opt_scope_modifier class_member class_body
 ;
 class_member:
-    property_declaration
+    variable_declaration ';'
     | method_declaration
 ;
-property_declaration:
-    opt_scope_modifier variable_declaration
-;
 variable_declaration:
-    data_type identifier opt_variable_initialization ';'
+    typed_identifier opt_variable_initialization
 ;
 opt_variable_initialization:
+    /* empty string */
+    | '=' expr
 ;
 method_declaration:
-    opt_scope_modifier data_type identifier '(' param_list ') {' stmt_list '}'
+    typed_identifier '(' opt_param_list ') {' stmt_list '}'
 ;
 stmt_list:
+    /* empty string */
     | stmt stmt_list
 ;
-param_list:
-    | param ',' param_list
-    | param
+opt_param_list:
+    /* empty string */
+    | param_list
 ;
-param:
-    data_type identifier
+param_list:
+    typed_identifier ',' param_list
+    | typed_identifier
 ;
 stmt:
-    variable_declaration
+    variable_declaration ';'
     | if
     | for
-    | assignment
-    | expr
+    | assignment ';'
+    | expr ';'
 ;
 if:
-    'if (' expr ') {' stmt_list '}' else
+    'if' '(' logical_expr ')' '{' stmt_list '}' opt_else
 ;
-else:
+opt_else:
+    /* empty string */
     | 'else' '{' stmt_list '}'
 ;
 for:
-    'for (' for_assignment ';' for_test ';' for_after_stmt ') {' stmt_list '}'
+    'for' '(' for_assignment ';' for_test ';' for_after_stmt ') {' stmt_list '}'
 ;
 for_assignment:
+    /* empty string */
+    | variable_declaration
     | assignment
+;
 for_test:
+    /* empty string */
     | logical_expr
+;
 for_after_stmt:
+    /* empty string */
     | expr
     | assignment
+;
 assignment:
+    IDENTIFIER '=' expr
 ;
 expr:
+    '(' expr ')'
+    | expr '+' expr
+    | expr '-' expr
+    | expr '*' expr
+    | expr '/' expr
 ;
 logical_expr:
+    expr logical_operator expr
+    | 'true'
+    | 'false'
 ;
-identifier:
-    letter alfanumeric_list
+logical_operator:
+    '!='
+    | '=='
+    | '<'
+    | '<='
+    | '>'
+    | '>='
 ;
-alfanumeric_list:
-    | letter alfanumeric_list
-    | digit alfanumeric_list
+typed_identifier:
+    data_type IDENTIFIER
 ;
-opt_scope_modifier: /* pensar no static */
+opt_scope_modifier:
+    /* empty string */
+    | 'public' opt_static_modifier
+    | 'protected' opt_static_modifier
+    | 'private' opt_static_modifier
+;
+opt_static_modifier: 
+    /* empty string */
+    | 'static'
 ;
 data_type:
-;
-letter:
-;
-digit:
+    'double'
+    | 'float'
+    | 'int'
+    | 'long'
+    | 'void'
+    | 'String'
+    | 'RuntimeException'
 ;
 
-/* Example grammar */
-
-input: /* empty string */
- | input line
- ;
-
+%%
+/*
 line: '\n'
  | exp '\n' { System.out.println(" " + $1.dval + " "); }
  ;
@@ -124,7 +188,16 @@ exp: NUM { $$ = $1; }
  | exp '^' exp { $$ = new ParserVal(Math.pow($1.dval, $3.dval)); }
  | '(' exp ')' { $$ = $2; }
  ;
-%%
+
+exp:  NUM                { $$ = $1;         }
+    | exp '+' exp        { $$ = $1 + $3;    }
+    | exp '-' exp        { $$ = $1 - $3;    }
+    | exp '*' exp        { $$ = $1 * $3;    }
+    | exp '/' exp        { $$ = $1 / $3;    }
+    | '-' exp  %prec NEG { $$ = -$2;        }
+    | exp '^' exp        { $$ = Math.pow($1, $3); }
+    | '(' exp ')'        { $$ = $2;         }
+*/
 
 String ins;
 StringTokenizer st;

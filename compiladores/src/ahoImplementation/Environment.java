@@ -1,3 +1,5 @@
+package ahoImplementation;
+
 import lexer.token.Identifier;
 
 import java.util.HashMap;
