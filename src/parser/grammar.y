@@ -63,6 +63,7 @@ import java.util.StringTokenizer;
 
 /* Gramática */
 %%
+
 program:
     'class' IDENTIFIER '{' class_body '}'
 ;
@@ -74,27 +75,47 @@ class_member:
     variable_declaration ';'
     | method_declaration
 ;
-variable_declaration:
-    typed_identifier opt_variable_initialization
-;
-opt_variable_initialization:
-    /* empty string */
-    | '=' expr
-;
+
 method_declaration:
-    typed_identifier '(' opt_param_list ') {' stmt_list '}'
+    typed_identifier '(' opt_typed_param_list ') {' stmt_list '}'
 ;
+
+/* Modifiers */
+opt_scope_modifier:
+    /* empty string */
+    | 'public' opt_static_modifier
+    | 'protected' opt_static_modifier
+    | 'private' opt_static_modifier
+;
+opt_static_modifier: 
+    /* empty string */
+    | 'static'
+;
+/* Modifiers */
+
+/* Params and args */
+opt_typed_param_list:
+    /* empty string */
+    | typed_param_list
+;
+typed_param_list:
+    typed_identifier ',' typed_param_list
+    | typed_identifier
+;
+opt_arg_list:
+    /* empty string */
+    | arg_list
+;
+arg_list:
+    expr ',' arg_list
+    | expr
+;
+/* Params and args */
+
+/* Statements */
 stmt_list:
     /* empty string */
     | stmt stmt_list
-;
-opt_param_list:
-    /* empty string */
-    | param_list
-;
-param_list:
-    typed_identifier ',' param_list
-    | typed_identifier
 ;
 stmt:
     variable_declaration ';'
@@ -103,6 +124,17 @@ stmt:
     | assignment ';'
     | expr ';'
 ;
+/* Statements */
+
+variable_declaration:
+    typed_identifier opt_variable_initialization
+;
+opt_variable_initialization:
+    /* empty string */
+    | '=' expr
+;
+
+/* If statement */
 if:
     'if' '(' logical_expr ')' '{' stmt_list '}' opt_else
 ;
@@ -110,6 +142,9 @@ opt_else:
     /* empty string */
     | 'else' '{' stmt_list '}'
 ;
+/* If statement */
+
+/* For statement */
 for:
     'for' '(' for_assignment ';' for_test ';' for_after_stmt ') {' stmt_list '}'
 ;
@@ -127,16 +162,25 @@ for_after_stmt:
     | expr
     | assignment
 ;
+/* For statement */
+
 assignment:
     IDENTIFIER '=' expr
 ;
+
+/* Expressions */
 expr:
     '(' expr ')'
     | expr '+' expr
     | expr '-' expr
     | expr '*' expr
     | expr '/' expr
+    | instantiation
 ;
+instantiation: 
+    'new' IDENTIFIER '(' arg_list ')'
+;
+
 logical_expr:
     expr logical_operator expr
     | 'true'
@@ -150,18 +194,10 @@ logical_operator:
     | '>'
     | '>='
 ;
+/* Expressions */
+
 typed_identifier:
     data_type IDENTIFIER
-;
-opt_scope_modifier:
-    /* empty string */
-    | 'public' opt_static_modifier
-    | 'protected' opt_static_modifier
-    | 'private' opt_static_modifier
-;
-opt_static_modifier: 
-    /* empty string */
-    | 'static'
 ;
 data_type:
     'double'
