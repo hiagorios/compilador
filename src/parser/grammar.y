@@ -64,129 +64,146 @@ import java.util.StringTokenizer;
 /* Gramática */
 %%
 
-program:
-    'class' IDENTIFIER '{' class_body '}'
+Program:
+    'class' IDENTIFIER '{' ClassBody '}'
 ;
-class_body:
+ClassBody:
     /* empty string */
-    | opt_scope_modifier class_member class_body
+    | OptScopeModifier ClassMember ClassBody
 ;
-class_member:
-    variable_declaration ';'
-    | method_declaration
+ClassMember:
+    VariableDeclaration ';'
+    | MethodDeclaration
 ;
 
-method_declaration:
-    typed_identifier '(' opt_typed_param_list ') {' stmt_list '}'
+MethodDeclaration:
+    TypedIdentifier '(' OptTypedParamList ') {' StmtList '}'
 ;
 
 /* Modifiers */
-opt_scope_modifier:
+OptScopeModifier:
     /* empty string */
-    | 'public' opt_static_modifier
-    | 'protected' opt_static_modifier
-    | 'private' opt_static_modifier
+    | 'public' OptStaticModifier
+    | 'protected' OptStaticModifier
+    | 'private' OptStaticModifier
 ;
-opt_static_modifier: 
+OptStaticModifier: 
     /* empty string */
     | 'static'
 ;
 /* Modifiers */
 
 /* Params and args */
-opt_typed_param_list:
+OptTypedParamList:
     /* empty string */
-    | typed_param_list
+    | TypedIdentifier TypedParamList
 ;
-typed_param_list:
-    typed_identifier ',' typed_param_list
-    | typed_identifier
-;
-opt_arg_list:
+TypedParamList:
     /* empty string */
-    | arg_list
+    | ',' TypedIdentifier TypedParamList
 ;
-arg_list:
-    expr ',' arg_list
-    | expr
+OptArgList:
+    /* empty string */
+    | ExprStmt ArgList
+;
+ArgList:
+    /* empty string */
+    | ',' ExprStmt ArgList
 ;
 /* Params and args */
 
 /* Statements */
-stmt_list:
+StmtList:
     /* empty string */
-    | stmt stmt_list
+    | Stmt StmtList
 ;
-stmt:
-    variable_declaration ';'
-    | if
-    | for
-    | assignment ';'
-    | expr ';'
+Stmt:
+    VariableDeclaration ';'
+    | IfStmt
+    | ForStmt
+    | AssignmentStmt ';'
+    | ExprStmt ';'
+    | ThrowStmt
+    | ReturnStmt
 ;
 /* Statements */
 
-variable_declaration:
-    typed_identifier opt_variable_initialization
+VariableDeclaration:
+    TypedIdentifier OptVariableInitialization
 ;
-opt_variable_initialization:
+OptVariableInitialization:
     /* empty string */
-    | '=' expr
+    | '=' ExprStmt
 ;
 
 /* If statement */
-if:
-    'if' '(' logical_expr ')' '{' stmt_list '}' opt_else
+IfStmt:
+    'if' '(' LogicalExpr ')' '{' StmtList '}' OptElse
 ;
-opt_else:
+OptElse:
     /* empty string */
-    | 'else' '{' stmt_list '}'
+    | 'else' '{' StmtList '}'
 ;
 /* If statement */
 
 /* For statement */
-for:
-    'for' '(' for_assignment ';' for_test ';' for_after_stmt ') {' stmt_list '}'
+ForStmt:
+    'for' '(' ForAssignment ';' LogicalExpr ';' ForAfterStmt ') {' StmtList '}'
 ;
-for_assignment:
+ForAssignment:
     /* empty string */
-    | variable_declaration
-    | assignment
+    | VariableDeclaration
+    | AssignmentStmt
 ;
-for_test:
+ForAfterStmt:
     /* empty string */
-    | logical_expr
-;
-for_after_stmt:
-    /* empty string */
-    | expr
-    | assignment
+    | ExprStmt
+    | AssignmentStmt
 ;
 /* For statement */
 
-assignment:
-    IDENTIFIER '=' expr
+AssignmentStmt:
+    IDENTIFIER AssignmentOperator ExprStmt
+;
+AssignmentOperator:
+    '='
+    | '+='
+    | '-='
+    | '*='
+    | '/='
+;
+ThrowStmt: 
+    'throw' 'new' 'RuntimeException'
+;
+Instantiation: 
+    'new' IDENTIFIER '(' ArgList ')'
+;
+MethodInvocation: 
+    IDENTIFIER '(' ArgList ')'
 ;
 
 /* Expressions */
-expr:
-    '(' expr ')'
-    | expr '+' expr
-    | expr '-' expr
-    | expr '*' expr
-    | expr '/' expr
-    | instantiation
+ExprStmt: 
+    '(' ExprStmt ')' Expr
+    // instanciação aqui pode ser problematico
+    | Instantiation Expr
+    | MethodInvocation Expr
+    | Number Expr
+    | IDENTIFIER Expr
 ;
-instantiation: 
-    'new' IDENTIFIER '(' arg_list ')'
+Expr: 
+    | OPERATOR ExprStmt
 ;
-
-logical_expr:
-    expr logical_operator expr
+Number: 
+    LONG_LITERAL
+    | INTEGER_LITERAL
+;
+LogicalExpr:
+    ExprStmt LogicalOperator ExprStmt
     | 'true'
     | 'false'
 ;
-logical_operator:
+LogicalOperator:
     '!='
     | '=='
     | '<'
@@ -196,17 +213,21 @@ logical_operator:
 ;
 /* Expressions */
 
-typed_identifier:
-    data_type IDENTIFIER
+TypedIdentifier:
+    DataType IDENTIFIER
 ;
-data_type:
-    'double'
-    | 'float'
-    | 'int'
-    | 'long'
+DataType:
+    'double' OptBrackets
+    | 'float' OptBrackets
+    | 'int' OptBrackets
+    | 'long' OptBrackets
+    | 'String' OptBrackets
     | 'void'
-    | 'String'
-    | 'RuntimeException'
+;
+OptBrackets:
+    /* empty string */
+    | '[' ']'
+    | '[' '] ' '[' ']'
 ;
 
 %%
