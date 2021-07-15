@@ -4,7 +4,7 @@ the longest portion of the input (longest match rule). If there is more than one
 expression that matches the longest portion of input (i.e. they all match the same input),
 the generated scanner chooses the expression that appears first in the specification.
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-package lexer;
+package src.lexer;
 
 import lexer.token.*;
 

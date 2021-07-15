@@ -12,84 +12,72 @@ yacc.linux -J grammar.y
 */
 
 %{
+package src.parser;
+
 import java.lang.Math;
 import java.io.*;
-import java.util.StringTokenizer;
+import src.lexer.Lexer;
 %}
 
 /* YACC Declarations */
-%token <DoubleLiteral> DOUBLE_LITERAL
-%token <Identifier> IDENTIFIER
-%token <IntegerLiteral> INTEGER_LITERAL
-%token <Keyword> KEYWORD
-%token <LogicalOperator> LOGICAL_OPERATOR
-%token <LongLiteral> LONG_LITERAL
-%token <Operator> OPERATOR
-%token <StringLiteral> STRING_LITERAL
-%token <Token> TOKEN
+
+/* Keywords */
+%token <Token> CLASS_KW DOUBLE_KW ELSE_KW FLOAT_KW FOR_KW IF_KW IMPORT_KW INT_KW
+%token <Token> LONG_KW NEW_KW PUBLIC_KW RETURN_KW STATIC_KW THROW_KW VOID_KW
+
+/* Symbols */
+%token <Token> COLON COMMA DOT LBRACE LBRACKET LPARENTH QUEST RBRACE RBRACKET RPARENTH SEMICOLON
+
+/* Operators */
+%token <Token> ASTERISK DIV EQ EQEQ GE GT LE LT MINUS MINUSEQ MINUSMINUS NE PLUS PLUSEQ PLUSPLUS
+
+/* Identifiers */
+%token <Identifier> RT_EXCEPTION
+%token <Identifier> STRING_KW
+
+/* Types */
+%type <DoubleLiteral> DOUBLE_LITERAL
+%type <IntegerLiteral> INTEGER_LITERAL
+%type <LongLiteral> LONG_LITERAL
+%type <StringLiteral> STRING_LITERAL
+%type <LogicalOperator> LOGICAL_OPERATOR
+%type <Operator> OPERATOR
+%type <Keyword> KEYWORD
+%type <Identifier> IDENTIFIER
+%type <Token> TOKEN
 
 %left '-' '+'
 %left '*' '/'
 %left NEG /* negation--unary minus */
 %right '^' /* exponentiation */
-/*
-"!="
-"=="
-"<" 
-"<="
-">" 
-">="
-"+="
-"-="
-"++"
-"--"
-"+" 
-"-" 
-"*" 
-"/" 
-"=" 
-"?"
-":"
-"("
-")"
-"{"
-"}"
-"["
-"]"
-";"
-","
-"."
-*/
 
 /* Gramática */
 %%
 
 Program:
-    'class' IDENTIFIER '{' ClassBody '}'
+    CLASS_KW IDENTIFIER LBRACE ClassBody RBRACE
 ;
 ClassBody:
     /* empty string */
     | OptScopeModifier ClassMember ClassBody
 ;
 ClassMember:
-    VariableDeclaration ';'
+    VariableDeclaration SEMICOLON
     | MethodDeclaration
 ;
 
 MethodDeclaration:
-    TypedIdentifier '(' OptTypedParamList ') {' StmtList '}'
+    TypedIdentifier LPARENTH OptTypedParamList RPARENTH Block
 ;
 
 /* Modifiers */
 OptScopeModifier:
     /* empty string */
-    | 'public' OptStaticModifier
-    | 'protected' OptStaticModifier
-    | 'private' OptStaticModifier
+    | PUBLIC_KW OptStaticModifier
 ;
 OptStaticModifier: 
     /* empty string */
-    | 'static'
+    | STATIC_KW
 ;
 /* Modifiers */
 
@@ -100,7 +88,7 @@ OptTypedParamList:
 ;
 TypedParamList:
     /* empty string */
-    | ',' TypedIdentifier TypedParamList
+    | COMMA TypedIdentifier TypedParamList
 ;
 OptArgList:
     /* empty string */
@@ -108,9 +96,13 @@ OptArgList:
 ;
 ArgList:
     /* empty string */
-    | ',' ExprStmt ArgList
+    | COMMA ExprStmt ArgList
 ;
 /* Params and args */
+
+Block:
+    LBRACE StmtList RBRACE
+;
 
 /* Statements */
 StmtList:
@@ -118,11 +110,11 @@ StmtList:
     | Stmt StmtList
 ;
 Stmt:
-    VariableDeclaration ';'
+    VariableDeclaration SEMICOLON
     | IfStmt
     | ForStmt
-    | AssignmentStmt ';'
-    | ExprStmt ';'
+    | AssignmentStmt SEMICOLON
+    | ExprStmt SEMICOLON
     | ThrowStmt
     | ReturnStmt
 ;
@@ -133,22 +125,22 @@ VariableDeclaration:
 ;
 OptVariableInitialization:
     /* empty string */
-    | '=' ExprStmt
+    | EQ ExprStmt
 ;
 
 /* If statement */
 IfStmt:
-    'if' '(' LogicalExpr ')' '{' StmtList '}' OptElse
+    IF_KW LPARENTH LogicalExpr RPARENTH Block OptElse
 ;
 OptElse:
     /* empty string */
-    | 'else' '{' StmtList '}'
+    | ELSE_KW Block
 ;
 /* If statement */
 
 /* For statement */
 ForStmt:
-    'for' '(' ForAssignment ';' LogicalExpr ';' ForAfterStmt ') {' StmtList '}'
+    FOR_KW LPARENTH ForAssignment SEMICOLON LogicalExpr SEMICOLON ForAfterStmt RPARENTH Block
 ;
 ForAssignment:
     /* empty string */
@@ -166,25 +158,26 @@ AssignmentStmt:
     IDENTIFIER AssignmentOperator ExprStmt
 ;
 AssignmentOperator:
-    '='
-    | '+='
-    | '-='
-    | '*='
-    | '/='
+    EQ
+    | PLUSEQ
+    | MINUSEQ
 ;
 ThrowStmt: 
-    'throw' 'new' 'RuntimeException'
+    THROW_KW NEW_KW RT_EXCEPTION
+;
+ReturnStmt:
+    RETURN_KW ExprStmt
 ;
 Instantiation: 
-    'new' IDENTIFIER '(' ArgList ')'
+    NEW_KW IDENTIFIER LPARENTH ArgList RPARENTH
 ;
 MethodInvocation: 
-    IDENTIFIER '(' ArgList ')'
+    IDENTIFIER LPARENTH ArgList RPARENTH
 ;
 
 /* Expressions */
 ExprStmt: 
-    '(' ExprStmt ')' Expr
+    LPARENTH ExprStmt RPARENTH Expr
     // instanciação aqui pode ser problematico
     | Instantiation Expr
     | MethodInvocation Expr
@@ -200,16 +193,14 @@ Number:
 ;
 LogicalExpr:
     ExprStmt LogicalOperator ExprStmt
-    | 'true'
-    | 'false'
 ;
 LogicalOperator:
-    '!='
-    | '=='
-    | '<'
-    | '<='
-    | '>'
-    | '>='
+    NE
+    | EQEQ
+    | LT
+    | LE
+    | GT
+    | GE
 ;
 /* Expressions */
 
@@ -217,108 +208,42 @@ TypedIdentifier:
     DataType IDENTIFIER
 ;
 DataType:
-    'double' OptBrackets
-    | 'float' OptBrackets
-    | 'int' OptBrackets
-    | 'long' OptBrackets
-    | 'String' OptBrackets
-    | 'void'
+    DOUBLE_KW OptBrackets
+    | FLOAT_KW OptBrackets
+    | INT_KW OptBrackets
+    | LONG_KW OptBrackets
+    | STRING_KW OptBrackets
+    | VOID_KW
 ;
 OptBrackets:
     /* empty string */
-    | '[' ']'
-    | '[' '] ' '[' ']'
+    | LBRACKET RBRACKET
+    | LBRACKET RBRACKET LBRACKET RBRACKET
 ;
 
 %%
-/*
-line: '\n'
- | exp '\n' { System.out.println(" " + $1.dval + " "); }
- ;
 
-exp: NUM { $$ = $1; }
- | exp '+' exp { $$ = new ParserVal($1.dval + $3.dval); }
- | exp '-' exp { $$ = new ParserVal($1.dval - $3.dval); }
- | exp '*' exp { $$ = new ParserVal($1.dval * $3.dval); }
- | exp '/' exp { $$ = new ParserVal($1.dval / $3.dval); }
- | '-' exp %prec NEG { $$ = new ParserVal(-$2.dval); }
- | exp '^' exp { $$ = new ParserVal(Math.pow($1.dval, $3.dval)); }
- | '(' exp ')' { $$ = $2; }
- ;
+public static void main(String[] args) {
+    Lexer scanner = null;
+    String file = args[0];
+    try {
+        FileInputStream stream = new java.io.FileInputStream(file);
+        Reader reader = new java.io.InputStreamReader(stream);
+        scanner = new Lexer(reader);
+        do {
+            System.out.println(scanner.yylex());
+        } while (!scanner.isEndOfFile());
 
-exp:  NUM                { $$ = $1;         }
-    | exp '+' exp        { $$ = $1 + $3;    }
-    | exp '-' exp        { $$ = $1 - $3;    }
-    | exp '*' exp        { $$ = $1 * $3;    }
-    | exp '/' exp        { $$ = $1 / $3;    }
-    | '-' exp  %prec NEG { $$ = -$2;        }
-    | exp '^' exp        { $$ = Math.pow($1, $3); }
-    | '(' exp ')'        { $$ = $2;         }
-*/
-
-String ins;
-StringTokenizer st;
-
-void yyerror(String s)
-{
- System.out.println("par:"+s);
-}
-
-boolean newline;
-int yylex()
-{
-String s;
-int tok;
-Double d;
- //System.out.print("yylex ");
- if (!st.hasMoreTokens())
- if (!newline)
- {
- newline=true;
- return '\n'; //So we look like classic YACC example
- }
- else
- return 0;
- s = st.nextToken();
- //System.out.println("tok:"+s);
- try
- {
- d = Double.valueOf(s);/*this may fail*/
- yylval = new ParserVal(d.doubleValue()); //SEE BELOW
- tok = NUM;
- }
- catch (Exception e)
- {
- tok = s.charAt(0);/*if not float, return char*/
- }
- return tok;
-}
-
-void dotest()
-{
-BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
- System.out.println("BYACC/J Calculator Demo");
- System.out.println("Note: Since this example uses the StringTokenizer");
- System.out.println("for simplicity, you will need to separate the items");
- System.out.println("with spaces, i.e.: '( 3 + 5 ) * 2'");
- while (true)
- {
- System.out.print("expression:");
- try
- {
- ins = in.readLine();
- }
- catch (Exception e)
- {
- }
- st = new StringTokenizer(ins);
- newline=false;
- yyparse();
- }
-}
-
-public static void main(String args[])
-{
- Parser par = new Parser(false);
- par.dotest();
+    }
+    catch (java.io.FileNotFoundException e) {
+        System.out.println("File not found : \""+file+"\"");
+    }
+    catch (java.io.IOException e) {
+        System.out.println("IO error scanning file \""+file+"\"");
+        System.out.println(e);
+    }
+    catch (Exception e) {
+        System.out.println("Unexpected exception:");
+        e.printStackTrace();
+    }
 }

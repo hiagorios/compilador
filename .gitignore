@@ -1,7 +1,4 @@
 # Hidden directories
 .*/
-
-out/
-*.iml
-compiladores/src/lexer/jflex
-compiladores/src/yacc.linux
+yacc.linux
+test/*
