@@ -1,4 +1,4 @@
-package src.lexer.token;
+package src.token;
 
 public enum TokenType {
     ASTERISK,

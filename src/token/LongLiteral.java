@@ -1,4 +1,4 @@
-package lexer.token;
+package src.token;
 
 public class LongLiteral extends Token {
 

@@ -1,14 +1,14 @@
-package lexer.token;
+package src.token;
 
-public class LogicalOperator extends Token {
+public class Operator extends Token {
 
-    public LogicalOperator(TokenType type, int line, int column) {
+    public Operator(TokenType type, int line, int column) {
         super(type, line, column);
     }
 
     @Override
     public String toString() {
-        return "LogicalOperator{" +
+        return "Operator{" +
                 "type=" + type +
                 ", line=" + line +
                 ", column=" + column +
