@@ -12,7 +12,6 @@ yacc -J -v src/parser/grammar.y
 */
 
 %{
-package src.parser;
 
 import java.lang.Math;
 import java.io.*;
@@ -23,28 +22,24 @@ import src.token.*;
 /* YACC Declarations */
 
 /* Keywords */
-%token <Token> CLASS_KW DOUBLE_KW ELSE_KW FLOAT_KW FOR_KW IF_KW IMPORT_KW INT_KW
-%token <Token> LONG_KW NEW_KW PUBLIC_KW RETURN_KW STATIC_KW THROW_KW VOID_KW
+%token CLASS_KW DOUBLE_KW ELSE_KW FLOAT_KW FOR_KW IF_KW IMPORT_KW INT_KW
+%token LONG_KW NEW_KW PUBLIC_KW RETURN_KW STATIC_KW THROW_KW VOID_KW
 
 /* Symbols */
-%token <Token> COLON COMMA DOT LBRACE LBRACKET LPARENTH QUEST RBRACE RBRACKET RPARENTH SEMICOLON
+%token COLON COMMA DOT LBRACE LBRACKET LPARENTH QUEST RBRACE RBRACKET RPARENTH SEMICOLON
 
 /* Operators */
-%token <Token> ASTERISK DIV EQ EQEQ GE GT LE LT MINUS MINUSEQ MINUSMINUS NE PLUS PLUSEQ PLUSPLUS
+%token ASTERISK DIV EQ EQEQ GE GT LE LT MINUS MINUSEQ MINUSMINUS NE PLUS PLUSEQ PLUSPLUS
 
 /* Identifiers */
-%token <Identifier> RT_EXCEPTION
-%token <Identifier> STRING_KW
+%token RT_EXCEPTION STRING_KW
 
 /* Types */
-%type <DoubleLiteral> DOUBLE_LITERAL
-%type <IntegerLiteral> INTEGER_LITERAL
-%type <LongLiteral> LONG_LITERAL
-%type <StringLiteral> STRING_LITERAL
-%type <LogicalOperator> LOGICAL_OPERATOR
-%type <Operator> OPERATOR
-%type <Keyword> KEYWORD
-%type <Identifier> IDENTIFIER
+%token <obj> DOUBLE_LITERAL
+%token <obj> INTEGER_LITERAL
+%token <obj> LONG_LITERAL
+%token <obj> STRING_LITERAL
+%token <obj> IDENTIFIER
 
 %left '-' '+'
 %left '*' '/'
@@ -157,11 +152,6 @@ ForAfterStmt:
 AssignmentStmt:
     IDENTIFIER AssignmentOperator ExprStmt
 ;
-AssignmentOperator:
-    EQ
-    | PLUSEQ
-    | MINUSEQ
-;
 ThrowStmt: 
     THROW_KW NEW_KW RT_EXCEPTION
 ;
@@ -185,7 +175,7 @@ ExprStmt:
     | IDENTIFIER Expr
 ;
 Expr: 
-    | OPERATOR ExprStmt
+    | Operator ExprStmt
 ;
 Number: 
     LONG_LITERAL
@@ -194,6 +184,12 @@ Number:
 LogicalExpr:
     ExprStmt LogicalOperator ExprStmt
 ;
+Operator:
+    PLUS
+    | MINUS
+    | ASTERISK
+    | DIV
+;
 LogicalOperator:
     NE
     | EQEQ
@@ -201,6 +197,15 @@ LogicalOperator:
     | LE
     | GT
     | GE
+;
+AssignmentOperator:
+    EQ
+    | PLUSEQ
+    | MINUSEQ
+;
+UnaryOperator:
+    PLUSPLUS
+    | MINUSMINUS
 ;
 /* Expressions */
 
@@ -222,18 +227,52 @@ OptBrackets:
 ;
 
 %%
+/* a reference to the lexer object */
+private Lexer lexer;
 
-public static void main(String[] args) {
-    Lexer scanner = null;
+/* setter for token's semantic value */
+public void setYylval(ParserVal yylval) {
+    this.yylval = yylval;
+}
+
+/* interface to the lexer */
+private int yylex () {
+    int yyl_return = -1;
+    try {
+        yyl_return = lexer.yylex();
+    }
+    catch (IOException e) {
+        System.err.println("IO error :"+e);
+    }
+    return yyl_return;
+}
+
+/* error reporting */
+public void yyerror (String error) {
+    System.err.println ("Error: " + error);
+}
+
+/* lexer is created in the constructor */
+public Parser(Reader r) {
+    lexer = new Lexer(r, this);
+}
+
+  /* main function to start the parser */
+public static void main(String args[]) throws IOException {
+    if (args == null || args.length == 0) {
+        System.out.println("Please specify a file");
+        System.exit(1);
+    }
     String file = args[0];
     try {
-        FileInputStream stream = new java.io.FileInputStream(file);
-        Reader reader = new java.io.InputStreamReader(stream);
-        scanner = new Lexer(reader);
-        do {
-            System.out.println(scanner.yylex());
-        } while (!scanner.isEndOfFile());
-
+        // FileInputStream stream = new java.io.FileInputStream(file);
+        // Reader reader = new java.io.InputStreamReader(stream);
+        // scanner = new Lexer(reader);
+        // do {
+        //     System.out.println(scanner.yylex());
+        // } while (!scanner.isEndOfFile());
+        Parser yyparser = new Parser(new FileReader(file));
+        yyparser.yyparse();
     }
     catch (java.io.FileNotFoundException e) {
         System.out.println("File not found : \""+file+"\"");

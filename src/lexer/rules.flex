@@ -7,6 +7,8 @@ the generated scanner chooses the expression that appears first in the specifica
 package src.lexer;
 
 import src.token.*;
+import src.parser.Parser;
+import src.parser.ParserVal;
 
 /**
   Classe Lexer para a disciplina de compiladores da Universidade Estadual de Santa Cruz (UESC)
@@ -24,7 +26,7 @@ import src.token.*;
 %unicode
 %line // Habilita contagem de linhas, através da variável yyline
 %column // Habilita contagem de colunas, através da variável yycolumn
-%type Token
+//%type Token
 
 /* User code */
 %{
@@ -33,7 +35,7 @@ import src.token.*;
   private Parser yyparser;
 
   /* constructor taking an additional parser object */
-  public Yylex(java.io.Reader r, Parser yyparser) {
+  public Lexer(java.io.Reader r, Parser yyparser) {
     this(r);
     this.yyparser = yyparser;
   }
@@ -44,32 +46,29 @@ import src.token.*;
       return zzAtEOF;
   }
 
-  private Token token(TokenType type) {
-    return new Token(type, yyline+1, yycolumn);
+  private ParserVal keyword(TokenType type) {
+    return new ParserVal(new Keyword(type, yyline+1, yycolumn));
   }
-  private Keyword keyword(TokenType type) {
-    return new Keyword(type, yyline+1, yycolumn);
+  private ParserVal logicalOperator(TokenType type) {
+    return new ParserVal(new LogicalOperator(type, yyline+1, yycolumn));
   }
-  private LogicalOperator logicalOperator(TokenType type) {
-    return new LogicalOperator(type, yyline+1, yycolumn);
+  private ParserVal operator(TokenType type) {
+    return new ParserVal(new Operator(type, yyline+1, yycolumn));
   }
-  private Operator operator(TokenType type) {
-    return new Operator(type, yyline+1, yycolumn);
+  private ParserVal identifier(String lexeme) {
+    return new ParserVal(new Identifier(yyline+1, yycolumn, lexeme));
   }
-  private Identifier identifier(String lexeme) {
-    return new Identifier(yyline+1, yycolumn, lexeme);
+  private ParserVal stringLiteral(String value) {
+    return new ParserVal(new StringLiteral(yyline+1, yycolumn, value));
   }
-  private StringLiteral stringLiteral(String value) {
-    return new StringLiteral(yyline+1, yycolumn, value);
+  private ParserVal integerLiteral(int value) {
+    return new ParserVal(new IntegerLiteral(yyline+1, yycolumn, value));
   }
-  private IntegerLiteral integerLiteral(int value) {
-    return new IntegerLiteral(yyline+1, yycolumn, value);
+  private ParserVal longLiteral(long value) {
+    return new ParserVal(new LongLiteral(yyline+1, yycolumn, value));
   }
-  private LongLiteral longLiteral(long value) {
-    return new LongLiteral(yyline+1, yycolumn, value);
-  }
-  private DoubleLiteral doubleLiteral(double value) {
-      return new DoubleLiteral(yyline+1, yycolumn, value);
+  private ParserVal doubleLiteral(double value) {
+      return new ParserVal(new DoubleLiteral(yyline+1, yycolumn, value));
   }
 %}
 
@@ -115,13 +114,13 @@ Identifier = [:jletter:] [:jletterdigit:]*
   "RuntimeException"  { return yyparser.RT_EXCEPTION; }
   "String"            { return yyparser.STRING_KW; }
 
-  {Identifier}        { yyparser.yylval = identifier(yytext());
+  {Identifier}        { yyparser.setYylval(identifier(yytext()));
                         return yyparser.IDENTIFIER; }
-  {IntegerLiteral}    { yyparser.yylval = integerLiteral(Integer.parseInt(yytext())); 
+  {IntegerLiteral}    { yyparser.setYylval(integerLiteral(Integer.parseInt(yytext()))); 
                         return yyparser.INTEGER_LITERAL; }
-  {LongLiteral}       { yyparser.yylval = longLiteral(Long.parseLong(yytext().substring(0,yylength()-1)));
+  {LongLiteral}       { yyparser.setYylval(longLiteral(Long.parseLong(yytext().substring(0,yylength()-1))));
                         return yyparser.LONG_LITERAL; }
-  {DoubleLiteral}     { yyparser.yylval = doubleLiteral(Double.parseDouble(yytext()));
+  {DoubleLiteral}     { yyparser.setYylval(doubleLiteral(Double.parseDouble(yytext())));
                         return yyparser.DOUBLE_LITERAL; }
 
   /* Caractere aspas duplas = inicio de string. Reseta o buffer de string e muda o estado para STRING */
@@ -168,7 +167,7 @@ Identifier = [:jletter:] [:jletterdigit:]*
 <STRING> {
   /* Volta ao estado inicial quando encontra aspas duplas, que é o fechamento da string */
   \"                  { yybegin(YYINITIAL);
-                        yyparser.yylval = stringLiteral(string.toString());
+                        yyparser.setYylval(stringLiteral(string.toString()));
                         return yyparser.STRING_LITERAL; }
 
   /* Faz match de qualquer coisa que não seja quebra de linha e tal, nem aspas duplas */
