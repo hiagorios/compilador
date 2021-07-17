@@ -1,5 +1,5 @@
 # Be sure to use yacc/j ; not unix yacc nor bison.
-BYACCJ = yacc -J
+BYACCJ = yacc -Jpackage=src.parser
 JFLEX  = jflex
 
 generate: Lexer.java Parser.java
