@@ -8,7 +8,7 @@ ACTIONS
 %%
 CODE
 ==Running==
-yacc.linux -J grammar.y
+yacc -J -v src/parser/grammar.y
 */
 
 %{
@@ -17,6 +17,7 @@ package src.parser;
 import java.lang.Math;
 import java.io.*;
 import src.lexer.Lexer;
+import src.token.*;
 %}
 
 /* YACC Declarations */
@@ -44,7 +45,6 @@ import src.lexer.Lexer;
 %type <Operator> OPERATOR
 %type <Keyword> KEYWORD
 %type <Identifier> IDENTIFIER
-%type <Token> TOKEN
 
 %left '-' '+'
 %left '*' '/'

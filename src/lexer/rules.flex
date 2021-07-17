@@ -6,7 +6,7 @@ the generated scanner chooses the expression that appears first in the specifica
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 package src.lexer;
 
-import lexer.token.*;
+import src.token.*;
 
 /**
   Classe Lexer para a disciplina de compiladores da Universidade Estadual de Santa Cruz (UESC)
@@ -14,8 +14,11 @@ import lexer.token.*;
 */
 %%
 
+/* Usage: jflex rules.flex */
+
 /* Options */
 %class Lexer
+%byaccj
 %public // Torna pública a classe gerada
 //%debug // Cria um main na classe gerada que espera o nome do arquivo de entrada e imprime mensagens de debug ao parsear
 %unicode
@@ -25,6 +28,16 @@ import lexer.token.*;
 
 /* User code */
 %{
+
+  /* store a reference to the parser object */
+  private Parser yyparser;
+
+  /* constructor taking an additional parser object */
+  public Yylex(java.io.Reader r, Parser yyparser) {
+    this(r);
+    this.yyparser = yyparser;
+  }
+
   StringBuffer string = new StringBuffer();
 
   public boolean isEndOfFile() {
@@ -82,62 +95,68 @@ Identifier = [:jletter:] [:jletterdigit:]*
 
 <YYINITIAL> {
   /* keywords */
-  "class"             { return keyword(TokenType.CLASS_KEYWORD); }
-  "double"            { return keyword(TokenType.DOUBLE_KEYWORD); }
-  "else"              { return keyword(TokenType.ELSE_KEYWORD); }
-  "float"             { return keyword(TokenType.FLOAT_KEYWORD); }
-  "for"               { return keyword(TokenType.FOR_KEYWORD); }
-  "if"                { return keyword(TokenType.IF_KEYWORD); }
-  "import"            { return keyword(TokenType.IMPORT_KEYWORD); }
-  "int"               { return keyword(TokenType.INT_KEYWORD); }
-  "long"              { return keyword(TokenType.LONG_KEYWORD); }
-  "new"               { return keyword(TokenType.NEW_KEYWORD); }
-  "public"            { return keyword(TokenType.PUBLIC_KEYWORD); }
-  "throw"             { return keyword(TokenType.THROW_KEYWORD); }
-  "return"            { return keyword(TokenType.RETURN_KEYWORD); }
-  "void"              { return keyword(TokenType.VOID_KEYWORD); }
-  "static"            { return keyword(TokenType.STATIC_KEYWORD); }
-  "String"            { return keyword(TokenType.STRING_KEYWORD); }
-  "RuntimeException"  { return keyword(TokenType.RT_EXCEPTION); }
+  "class"             { return yyparser.CLASS_KW; }
+  "double"            { return yyparser.DOUBLE_KW; }
+  "else"              { return yyparser.ELSE_KW; }
+  "float"             { return yyparser.FLOAT_KW; }
+  "for"               { return yyparser.FOR_KW; }
+  "if"                { return yyparser.IF_KW; }
+  "import"            { return yyparser.IMPORT_KW; }
+  "int"               { return yyparser.INT_KW; }
+  "long"              { return yyparser.LONG_KW; }
+  "new"               { return yyparser.NEW_KW; }
+  "public"            { return yyparser.PUBLIC_KW; }
+  "return"            { return yyparser.RETURN_KW; }
+  "static"            { return yyparser.STATIC_KW; }
+  "throw"             { return yyparser.THROW_KW; }
+  "void"              { return yyparser.VOID_KW; }
 
-  {Identifier}        { return identifier(yytext()); }
-  {IntegerLiteral}    { return integerLiteral(Integer.parseInt(yytext())); }
-  {LongLiteral}       { return longLiteral(Long.parseLong(yytext().substring(0,yylength()-1))); }
-  {DoubleLiteral}     { return doubleLiteral(Double.parseDouble(yytext())); }
+  /* Java identifiers */
+  "RuntimeException"  { return yyparser.RT_EXCEPTION; }
+  "String"            { return yyparser.STRING_KW; }
+
+  {Identifier}        { yyparser.yylval = identifier(yytext());
+                        return yyparser.IDENTIFIER; }
+  {IntegerLiteral}    { yyparser.yylval = integerLiteral(Integer.parseInt(yytext())); 
+                        return yyparser.INTEGER_LITERAL; }
+  {LongLiteral}       { yyparser.yylval = longLiteral(Long.parseLong(yytext().substring(0,yylength()-1)));
+                        return yyparser.LONG_LITERAL; }
+  {DoubleLiteral}     { yyparser.yylval = doubleLiteral(Double.parseDouble(yytext()));
+                        return yyparser.DOUBLE_LITERAL; }
 
   /* Caractere aspas duplas = inicio de string. Reseta o buffer de string e muda o estado para STRING */
   \"                  { string.setLength(0); yybegin(STRING); }
 
   /* Logical operators */
-  "!="                { return logicalOperator(TokenType.NE); }
-  "=="                { return logicalOperator(TokenType.EQEQ); }
-  "<"                 { return logicalOperator(TokenType.LT); }
-  "<="                { return logicalOperator(TokenType.LE); }
-  ">"                 { return logicalOperator(TokenType.GT); }
-  ">="                { return logicalOperator(TokenType.GE); }
+  "!="                { return yyparser.NE; }
+  "=="                { return yyparser.EQEQ; }
+  "<"                 { return yyparser.LT; }
+  "<="                { return yyparser.LE; }
+  ">"                 { return yyparser.GT; }
+  ">="                { return yyparser.GE; }
 
   /* Operators */
-  "+="                { return operator(TokenType.PLUSEQ); }
-  "-="                { return operator(TokenType.MINUSEQ); }
-  "++"                { return operator(TokenType.PLUSPLUS); }
-  "--"                { return operator(TokenType.MINUSMINUS); }
-  "+"                 { return operator(TokenType.PLUS); }
-  "-"                 { return operator(TokenType.MINUS); }
-  "*"                 { return operator(TokenType.ASTERISK); }
-  "/"                 { return operator(TokenType.DIV); }
-  "="                 { return operator(TokenType.EQ); }
+  "+="                { return yyparser.PLUSEQ; }
+  "-="                { return yyparser.MINUSEQ; }
+  "++"                { return yyparser.PLUSPLUS; }
+  "--"                { return yyparser.MINUSMINUS; }
+  "+"                 { return yyparser.PLUS; }
+  "-"                 { return yyparser.MINUS; }
+  "*"                 { return yyparser.ASTERISK; }
+  "/"                 { return yyparser.DIV; }
+  "="                 { return yyparser.EQ; }
 
-  "?"                 { return token(TokenType.QUEST); }
-  ":"                 { return token(TokenType.COLON); }
-  "("                 { return token(TokenType.LPARENTH); }
-  ")"                 { return token(TokenType.RPARENTH); }
-  "{"                 { return token(TokenType.LBRACE); }
-  "}"                 { return token(TokenType.RBRACE); }
-  "["                 { return token(TokenType.LBRACKET); }
-  "]"                 { return token(TokenType.RBRACKET); }
-  ";"                 { return token(TokenType.SEMICOLON); }
-  ","                 { return token(TokenType.COMMA); }
-  "."                 { return token(TokenType.DOT); }
+  "?"                 { return yyparser.QUEST; }
+  ":"                 { return yyparser.COLON; }
+  "("                 { return yyparser.LPARENTH; }
+  ")"                 { return yyparser.RPARENTH; }
+  "{"                 { return yyparser.LBRACE; }
+  "}"                 { return yyparser.RBRACE; }
+  "["                 { return yyparser.LBRACKET; }
+  "]"                 { return yyparser.RBRACKET; }
+  ";"                 { return yyparser.SEMICOLON; }
+  ","                 { return yyparser.COMMA; }
+  "."                 { return yyparser.DOT; }
 
   /* Comments */
   {Comment}           { /* ignore */ }
@@ -148,7 +167,9 @@ Identifier = [:jletter:] [:jletterdigit:]*
 
 <STRING> {
   /* Volta ao estado inicial quando encontra aspas duplas, que é o fechamento da string */
-  \"                  { yybegin(YYINITIAL); return stringLiteral(string.toString()); }
+  \"                  { yybegin(YYINITIAL);
+                        yyparser.yylval = stringLiteral(string.toString());
+                        return yyparser.STRING_LITERAL; }
 
   /* Faz match de qualquer coisa que não seja quebra de linha e tal, nem aspas duplas */
   /* E concatena no buffer de string. yytext é o texto lido */
