@@ -106,7 +106,11 @@ class Weierstrass {
         double sum = 0.0;
         for (int i = 0; i < d; i++) {
             double max = Math.abs(x[i]) - 5;
-            sum += max > 0 ? Math.pow(max, 2) : 0;
+            if (max > 0) {
+                sum += Math.pow(max, 2);
+            } else {
+                sum += 0;
+            }
         }
         return sum;
     }

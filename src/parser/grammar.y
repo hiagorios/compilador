@@ -25,14 +25,11 @@ import src.token.*;
 %token CLASS_KW DOUBLE_KW ELSE_KW FLOAT_KW FOR_KW IF_KW IMPORT_KW INT_KW
 %token LONG_KW NEW_KW PUBLIC_KW RETURN_KW STATIC_KW THROW_KW VOID_KW
 
-/* Symbols */
-%token COLON COMMA DOT LBRACE LBRACKET LPARENTH QUEST RBRACE RBRACKET RPARENTH SEMICOLON
-
 /* Operators */
-%token ASTERISK DIV EQ MINUS MINUSEQ MINUSMINUS PLUS PLUSEQ PLUSPLUS
+%token MINUSEQ MINUSMINUS PLUSEQ PLUSPLUS
 
 /* Logical Operators */
-%token EQEQ GE GT LE LT NE
+%token EQEQ GE LE NE
 
 /* Java Identifiers */
 %token RT_EXCEPTION STRING_KW
@@ -48,31 +45,27 @@ import src.token.*;
 // %type <dval> Number
 
 /* Precedencia cresce de cima pra baixo */
-%left EQEQ EQ GE GT LE LT NE
-%left MINUS PLUS
-%left ASTERISK DIV
+%left EQEQ '=' GE '>' LE '<' NE
+%left '-' '+'
+%left '*' '/'
 %left NEGATIVE
-
-/* Precedencias não associativas */
-%nonassoc LOWER
-%nonassoc GREATER
 
 /* Gramática */
 %%
 
 Program:
-    CLASS_KW IDENTIFIER LBRACE ClassBody RBRACE
+    CLASS_KW IDENTIFIER '{' ClassBody '}'
 ;
 ClassBody:
     /* empty string */
     | OptScopeModifier ClassMember ClassBody
 ;
 ClassMember:
-    VariableDeclaration SEMICOLON
+    VariableDeclaration ';'
     | MethodDeclaration
 ;
 MethodDeclaration:
-    TypedIdentifier LPARENTH TypedParamList RPARENTH Block
+    TypedIdentifier '(' TypedParamList ')' Block
 ;
 OptScopeModifier:
     /* empty string */
@@ -84,7 +77,7 @@ OptStaticModifier:
 ;
 TypedParamList:
     TypedIdentifier
-    | TypedIdentifier COMMA TypedParamList
+    | TypedIdentifier ',' TypedParamList
 ;
 OptArgList:
     /* empty string */
@@ -92,21 +85,21 @@ OptArgList:
 ;
 ArgList:
     ExprStmt
-    | ExprStmt COMMA ArgList
+    | ExprStmt ',' ArgList
 ;
 Block:
-    LBRACE StmtList RBRACE
+    '{' StmtList '}'
 ;
 StmtList:
     /* empty string */
     | Stmt StmtList
 ;
 Stmt:
-    VariableDeclaration SEMICOLON
+    VariableDeclaration ';'
     | IfStmt
     | ForStmt
-    | AssignmentStmt SEMICOLON
-    | ExprStmt SEMICOLON
+    | AssignmentStmt ';'
+    | ExprStmt ';'
     | ThrowStmt
     | ReturnStmt
 ;
@@ -118,14 +111,14 @@ OptVariableInitialization:
     | AssignmentOperator ExprStmt
 ;
 IfStmt:
-    IF_KW LPARENTH LogicalExpr RPARENTH Block OptElse
+    IF_KW '(' LogicalExpr ')' Block OptElse
 ;
 OptElse:
     /* empty string */
     | ELSE_KW Block
 ;
 ForStmt:
-    FOR_KW LPARENTH ForAssignment SEMICOLON LogicalExpr SEMICOLON IncrementStmt RPARENTH Block
+    FOR_KW '(' ForAssignment ';' LogicalExpr ';' IncrementStmt ')' Block
 ;
 ForAssignment:
     VariableDeclaration
@@ -149,22 +142,22 @@ ExprStmt:
     | Instantiation
 ;
 Expr: 
-    Expr PLUS Expr
-    | Expr MINUS Expr
-    | Expr ASTERISK Expr
-    | Expr DIV Expr
+    Expr '+' Expr
+    | Expr '-' Expr
+    | Expr '*' Expr
+    | Expr '/' Expr
     /* Define que a precedência é a mesma definida para NEGATIVE */
-    | MINUS Expr %prec NEGATIVE
-    | LPARENTH Expr RPARENTH
+    | '-' Expr %prec NEGATIVE
+    | '(' Expr ')'
     | MethodInvocation
     | Number
-    | IDENTIFIER %prec LOWER
+    | IDENTIFIER
  ;
 Instantiation: 
-    NEW_KW IDENTIFIER LPARENTH OptArgList RPARENTH
+    NEW_KW IDENTIFIER '(' OptArgList ')'
 ;
 MethodInvocation: 
-    IDENTIFIER LPARENTH OptArgList RPARENTH %prec GREATER
+    IDENTIFIER '(' OptArgList ')'
 ;
 Number: 
     LONG_LITERAL
@@ -177,13 +170,13 @@ LogicalExpr:
 LogicalOperator:
     NE
     | EQEQ
-    | LT
+    | '<'
     | LE
-    | GT
+    | '>'
     | GE
 ;
 AssignmentOperator:
-    EQ
+    '='
     | PLUSEQ
     | MINUSEQ
 ;
@@ -204,8 +197,8 @@ DataType:
 ;
 OptBrackets:
     /* empty string */
-    | LBRACKET RBRACKET
-    | LBRACKET RBRACKET LBRACKET RBRACKET
+    | '[' ']'
+    | '[' ']' '[' ']'
 ;
 
 %%

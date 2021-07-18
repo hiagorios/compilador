@@ -129,9 +129,9 @@ Identifier = [:jletter:] [:jletterdigit:]*
   /* Logical operators */
   "!="                { return yyparser.NE; }
   "=="                { return yyparser.EQEQ; }
-  "<"                 { return yyparser.LT; }
+  "<"                 { return (int) yycharat(0); }
   "<="                { return yyparser.LE; }
-  ">"                 { return yyparser.GT; }
+  ">"                 { return (int) yycharat(0); }
   ">="                { return yyparser.GE; }
 
   /* Operators */
@@ -139,23 +139,22 @@ Identifier = [:jletter:] [:jletterdigit:]*
   "-="                { return yyparser.MINUSEQ; }
   "++"                { return yyparser.PLUSPLUS; }
   "--"                { return yyparser.MINUSMINUS; }
-  "+"                 { return yyparser.PLUS; }
-  "-"                 { return yyparser.MINUS; }
-  "*"                 { return yyparser.ASTERISK; }
-  "/"                 { return yyparser.DIV; }
-  "="                 { return yyparser.EQ; }
-
-  "?"                 { return yyparser.QUEST; }
-  ":"                 { return yyparser.COLON; }
-  "("                 { return yyparser.LPARENTH; }
-  ")"                 { return yyparser.RPARENTH; }
-  "{"                 { return yyparser.LBRACE; }
-  "}"                 { return yyparser.RBRACE; }
-  "["                 { return yyparser.LBRACKET; }
-  "]"                 { return yyparser.RBRACKET; }
-  ";"                 { return yyparser.SEMICOLON; }
-  ","                 { return yyparser.COMMA; }
-  "."                 { return yyparser.DOT; }
+  "+" |
+  "-" |
+  "*" |
+  "/" |
+  "=" |
+  
+  /* Symbols */
+  "(" |
+  ")" |
+  "{" |
+  "}" |
+  "[" |
+  "]" |
+  ";" |
+  "," |
+  "."                 { return (int) yycharat(0); }
 
   /* Comments */
   {Comment}           { /* ignore */ }
