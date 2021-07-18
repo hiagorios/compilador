@@ -29,9 +29,12 @@ import src.token.*;
 %token COLON COMMA DOT LBRACE LBRACKET LPARENTH QUEST RBRACE RBRACKET RPARENTH SEMICOLON
 
 /* Operators */
-%token ASTERISK DIV EQ EQEQ GE GT LE LT MINUS MINUSEQ MINUSMINUS NE PLUS PLUSEQ PLUSPLUS
+%token ASTERISK DIV EQ MINUS MINUSEQ MINUSMINUS PLUS PLUSEQ PLUSPLUS
 
-/* Identifiers */
+/* Logical Operators */
+%token EQEQ GE GT LE LT NE
+
+/* Java Identifiers */
 %token RT_EXCEPTION STRING_KW
 
 /* Types */
@@ -41,10 +44,12 @@ import src.token.*;
 %token <obj> STRING_LITERAL
 %token <obj> IDENTIFIER
 
+%type <dval> Expr
+%type <dval> Number
+
 %left '-' '+'
 %left '*' '/'
-%left NEG /* negation--unary minus */
-%right '^' /* exponentiation */
+%left NEGATIVE
 
 /* Gramática */
 %%
@@ -60,12 +65,9 @@ ClassMember:
     VariableDeclaration SEMICOLON
     | MethodDeclaration
 ;
-
 MethodDeclaration:
-    TypedIdentifier LPARENTH OptTypedParamList RPARENTH Block
+    TypedIdentifier LPARENTH TypedParamList RPARENTH Block
 ;
-
-/* Modifiers */
 OptScopeModifier:
     /* empty string */
     | PUBLIC_KW OptStaticModifier
@@ -74,32 +76,21 @@ OptStaticModifier:
     /* empty string */
     | STATIC_KW
 ;
-/* Modifiers */
-
-/* Params and args */
-OptTypedParamList:
-    /* empty string */
-    | TypedIdentifier TypedParamList
-;
 TypedParamList:
-    /* empty string */
-    | COMMA TypedIdentifier TypedParamList
+    TypedIdentifier
+    | TypedIdentifier COMMA TypedParamList
 ;
 OptArgList:
     /* empty string */
-    | ExprStmt ArgList
+    | ArgList
 ;
 ArgList:
-    /* empty string */
-    | COMMA ExprStmt ArgList
+    ExprStmt
+    | ExprStmt COMMA ArgList
 ;
-/* Params and args */
-
 Block:
     LBRACE StmtList RBRACE
 ;
-
-/* Statements */
 StmtList:
     /* empty string */
     | Stmt StmtList
@@ -113,17 +104,13 @@ Stmt:
     | ThrowStmt
     | ReturnStmt
 ;
-/* Statements */
-
 VariableDeclaration:
     TypedIdentifier OptVariableInitialization
 ;
 OptVariableInitialization:
     /* empty string */
-    | EQ ExprStmt
+    | AssignmentOperator ExprStmt
 ;
-
-/* If statement */
 IfStmt:
     IF_KW LPARENTH LogicalExpr RPARENTH Block OptElse
 ;
@@ -131,26 +118,19 @@ OptElse:
     /* empty string */
     | ELSE_KW Block
 ;
-/* If statement */
-
-/* For statement */
 ForStmt:
-    FOR_KW LPARENTH ForAssignment SEMICOLON LogicalExpr SEMICOLON ForAfterStmt RPARENTH Block
+    FOR_KW LPARENTH ForAssignment SEMICOLON LogicalExpr SEMICOLON IncrementStmt RPARENTH Block
 ;
 ForAssignment:
-    /* empty string */
-    | VariableDeclaration
+    VariableDeclaration
     | AssignmentStmt
 ;
-ForAfterStmt:
-    /* empty string */
-    | ExprStmt
-    | AssignmentStmt
-;
-/* For statement */
-
 AssignmentStmt:
     IDENTIFIER AssignmentOperator ExprStmt
+;
+IncrementStmt:
+    IDENTIFIER UnaryOperator
+    | UnaryOperator IDENTIFIER
 ;
 ThrowStmt: 
     THROW_KW NEW_KW RT_EXCEPTION
@@ -158,31 +138,35 @@ ThrowStmt:
 ReturnStmt:
     RETURN_KW ExprStmt
 ;
-Instantiation: 
-    NEW_KW IDENTIFIER LPARENTH ArgList RPARENTH
-;
-MethodInvocation: 
-    IDENTIFIER LPARENTH ArgList RPARENTH
-;
-
-/* Expressions */
 ExprStmt: 
-    LPARENTH ExprStmt RPARENTH Expr
-    // instanciação aqui pode ser problematico
-    | Instantiation Expr
-    | MethodInvocation Expr
-    | Number Expr
-    | IDENTIFIER Expr
+    Expr
+    | Instantiation
 ;
 Expr: 
-    | Operator ExprStmt
+    Expr PLUS Expr { $$ = new ParserVal($1.dval + $3.dval); }
+    | Expr MINUS Expr { $$ = new ParserVal($1.dval - $3.dval); }
+    | Expr ASTERISK Expr { $$ = new ParserVal($1.dval * $3.dval); }
+    | Expr DIV Expr { $$ = new ParserVal($1.dval / $3.dval); }
+    /* Define que a precedência é a mesma definida para NEGATIVE */
+    | MINUS Expr %prec NEGATIVE { $$ = new ParserVal(-$2.dval); }
+    | MethodInvocation
+    | LPARENTH Expr RPARENTH { $$ = $2; }
+    | Number { $$ = $1; }
+    | IDENTIFIER { $$ = $1; }
+ ;
+Instantiation: 
+    NEW_KW IDENTIFIER LPARENTH OptArgList RPARENTH
+;
+MethodInvocation: 
+    IDENTIFIER LPARENTH OptArgList RPARENTH
 ;
 Number: 
     LONG_LITERAL
     | INTEGER_LITERAL
+    | DOUBLE_LITERAL
 ;
 LogicalExpr:
-    ExprStmt LogicalOperator ExprStmt
+    Expr LogicalOperator Expr
 ;
 Operator:
     PLUS
@@ -207,8 +191,6 @@ UnaryOperator:
     PLUSPLUS
     | MINUSMINUS
 ;
-/* Expressions */
-
 TypedIdentifier:
     DataType IDENTIFIER
 ;

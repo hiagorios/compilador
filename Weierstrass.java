@@ -2,7 +2,7 @@ class Weierstrass {
 
     public static void main(String[] args) {
         Weierstrass w = new Weierstrass();
-        System.out.println(w.calculate(new double[]{0.0, 0.0}));
+        System.out.println(w.calculate(new double[] { 0.0, 0.0 }));
     }
 
     double calculate(double[] x) {
@@ -16,23 +16,23 @@ class Weierstrass {
         }
 
         double[] z = generateZ(0.01, x);
-//        System.out.println("Vector z");
-//        System.out.println(Arrays.toString(z));
+        // System.out.println("Vector z");
+        // System.out.println(Arrays.toString(z));
 
-        //Calculando f0
+        // Calculando f0
         double f0 = 0.0;
         for (int k = 0; k <= kFinal; k++) {
             f0 += (1 / Math.pow(2, k)) * Math.cos(pi2 * Math.pow(3, k) * 0.5);
         }
 
-        //Calculando os somatórios
+        // Calculando os somatórios
         double sum = 0.0;
 
         for (int i = 0; i < dimension; i++) {
             for (int k = 0; k <= kFinal; k++) {
                 sum += (1 / Math.pow(2, k)) * Math.cos(pi2 * Math.pow(3, k) * (z[i] + 0.5));
             }
-            //f0 está fora do somatório interno mas dentro do somatório externo
+            // f0 está fora do somatório interno mas dentro do somatório externo
             sum -= f0;
         }
 
@@ -45,17 +45,17 @@ class Weierstrass {
 
     double[] generateZ(double alfa, double[] x) {
         double[][] matrixAlfa = generateMatrixAlfa(alfa, x.length);
-//        System.out.println("Matrix Alfa");
-//        System.out.println(Arrays.deepToString(matrixAlfa));
+        // System.out.println("Matrix Alfa");
+        // System.out.println(Arrays.deepToString(matrixAlfa));
         double[][] matrixR = cocoRandUniforme(x.length, 13L);
-//        System.out.println("Matrix R");
-//        System.out.println(Arrays.deepToString(matrixR));
+        // System.out.println("Matrix R");
+        // System.out.println(Arrays.deepToString(matrixR));
         double[][] rAlfa = multiply(matrixR, matrixAlfa);
-//        System.out.println("Matrix RAlfa");
-//        System.out.println(Arrays.deepToString(rAlfa));
+        // System.out.println("Matrix RAlfa");
+        // System.out.println(Arrays.deepToString(rAlfa));
         double[] qTosz = generateQTosz(x, matrixR);
-//        System.out.println("Vector QTosz");
-//        System.out.println(Arrays.toString(qTosz));
+        // System.out.println("Vector QTosz");
+        // System.out.println(Arrays.toString(qTosz));
         return multiply(rAlfa, qTosz);
     }
 
@@ -70,14 +70,14 @@ class Weierstrass {
 
     double[] generateQTosz(double[] x, double[][] matrixR) {
         double[][] matrixQ = cocoRandUniforme(x.length, 1000000L);
-//        System.out.println("Matrix Q");
-//        System.out.println(Arrays.deepToString(matrixQ));
-        double[] rx = multiply(matrixR, x); //3x3 3x1 por exemplo
-//        System.out.println("Vector Rx");
-//        System.out.println(Arrays.toString(rx));
+        // System.out.println("Matrix Q");
+        // System.out.println(Arrays.deepToString(matrixQ));
+        double[] rx = multiply(matrixR, x); // 3x3 3x1 por exemplo
+        // System.out.println("Vector Rx");
+        // System.out.println(Arrays.toString(rx));
         double[] tosz = tosz(rx);
-//        System.out.println("Vector Tosz");
-//        System.out.println(Arrays.toString(tosz));
+        // System.out.println("Vector Tosz");
+        // System.out.println(Arrays.toString(tosz));
         return multiply(matrixQ, tosz);
     }
 
@@ -134,22 +134,22 @@ class Weierstrass {
         return result;
     }
 
-//    As matrizes R e Q são geradas a partir da função de rotação
-//    randômica, adotando-se um seed de 13 para R e um seed de
-//    10^6 para a função Q, ou seja, a mesma função é usada para ambas,
-//    mudando-se apenas os argumentos passados como parâmetros.
+    // As matrizes R e Q são geradas a partir da função de rotação
+    // randômica, adotando-se um seed de 13 para R e um seed de
+    // 10^6 para a função Q, ou seja, a mesma função é usada para ambas,
+    // mudando-se apenas os argumentos passados como parâmetros.
     static double[][] cocoRandUniforme(int dim, long inseed) {
-//        if (inseed == 13) {
-//            return new double[][]{
-//                    new double[]{0.1, 0.2},
-//                    new double[]{0.3, 0.4},
-//            };
-//        } else {
-//            return new double[][]{
-//                    new double[]{0.9, 0.8},
-//                    new double[]{0.7, 0.6},
-//            };
-//        }
+        // if (inseed == 13) {
+        // return new double[][]{
+        // new double[]{0.1, 0.2},
+        // new double[]{0.3, 0.4},
+        // };
+        // } else {
+        // return new double[][]{
+        // new double[]{0.9, 0.8},
+        // new double[]{0.7, 0.6},
+        // };
+        // }
 
         double[][] r = new double[dim][dim];
 
