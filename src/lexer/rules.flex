@@ -22,11 +22,9 @@ import src.parser.ParserVal;
 %class Lexer
 %byaccj
 %public // Torna pública a classe gerada
-//%debug // Cria um main na classe gerada que espera o nome do arquivo de entrada e imprime mensagens de debug ao parsear
 %unicode
 %line // Habilita contagem de linhas, através da variável yyline
 %column // Habilita contagem de colunas, através da variável yycolumn
-//%type Token
 
 /* User code */
 %{
@@ -41,6 +39,14 @@ import src.parser.ParserVal;
   }
 
   StringBuffer string = new StringBuffer();
+
+  public int getLine() {
+      return yyline;
+  }
+
+  public int getColumn() {
+      return yycolumn;
+  }
 
   public boolean isEndOfFile() {
       return zzAtEOF;
@@ -182,4 +188,4 @@ Identifier = [:jletter:] [:jletterdigit:]*
 
 /* error fallback: faz match em qualquer estado léxico e de qualquer caractere */
 /* Mas como é a última regra e só lê um caractere, só faz match se nenhuma outra fizer */
-[^]                   { throw new Error("Syntax error in <" + yytext() + ">, line " + yyline + " column " + yycolumn); }
+[^]                   { throw new Error("Lexical error in <" + yytext() + ">, line " + yyline + " column " + yycolumn); }

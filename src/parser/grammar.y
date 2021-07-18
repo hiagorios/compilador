@@ -54,7 +54,7 @@ import src.token.*;
 %%
 
 Program:
-    CLASS_KW IDENTIFIER '{' ClassBody '}'
+    CLASS_KW IDENTIFIER '{' ClassBody '}' { System.out.println("Parsed correctly"); }
 ;
 ClassBody:
     /* empty string */
@@ -145,7 +145,8 @@ Expr:
     Expr '+' Expr
     | Expr '-' Expr
     | Expr '*' Expr
-    | Expr '/' Expr
+    | Expr '/' Expr     // { if($3 == 0.0) yyerror("divide by zero"); else $$ = $1 / $3; }
+
     /* Define que a precedência é a mesma definida para NEGATIVE */
     | '-' Expr %prec NEGATIVE
     | '(' Expr ')'
@@ -224,7 +225,8 @@ private int yylex () {
 
 /* error reporting */
 public void yyerror (String error) {
-    System.err.println ("Error: " + error);
+    System.err.println ("Error: " + error + " at line " + lexer.getLine() + " column " + lexer.getColumn());
+    System.err.println ("Text: " + lexer.yytext());
 }
 
 /* lexer is created in the constructor */
@@ -240,21 +242,8 @@ public static void main(String args[]) throws IOException {
     }
     String file = args[0];
     try {
-        // FileInputStream stream = new java.io.FileInputStream(file);
-        // Reader reader = new java.io.InputStreamReader(stream);
-        // scanner = new Lexer(reader);
-        // do {
-        //     System.out.println(scanner.yylex());
-        // } while (!scanner.isEndOfFile());
         Parser yyparser = new Parser(new FileReader(file));
         yyparser.yyparse();
-    }
-    catch (java.io.FileNotFoundException e) {
-        System.out.println("File not found : \""+file+"\"");
-    }
-    catch (java.io.IOException e) {
-        System.out.println("IO error scanning file \""+file+"\"");
-        System.out.println(e);
     }
     catch (Exception e) {
         System.out.println("Unexpected exception:");
