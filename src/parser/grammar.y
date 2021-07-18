@@ -44,12 +44,18 @@ import src.token.*;
 %token <obj> STRING_LITERAL
 %token <obj> IDENTIFIER
 
-%type <dval> Expr
-%type <dval> Number
+// %type <dval> Expr
+// %type <dval> Number
 
-%left '-' '+'
-%left '*' '/'
+/* Precedencia cresce de cima pra baixo */
+%left EQEQ EQ GE GT LE LT NE
+%left MINUS PLUS
+%left ASTERISK DIV
 %left NEGATIVE
+
+/* Precedencias não associativas */
+%nonassoc LOWER
+%nonassoc GREATER
 
 /* Gramática */
 %%
@@ -143,22 +149,22 @@ ExprStmt:
     | Instantiation
 ;
 Expr: 
-    Expr PLUS Expr { $$ = new ParserVal($1.dval + $3.dval); }
-    | Expr MINUS Expr { $$ = new ParserVal($1.dval - $3.dval); }
-    | Expr ASTERISK Expr { $$ = new ParserVal($1.dval * $3.dval); }
-    | Expr DIV Expr { $$ = new ParserVal($1.dval / $3.dval); }
+    Expr PLUS Expr
+    | Expr MINUS Expr
+    | Expr ASTERISK Expr
+    | Expr DIV Expr
     /* Define que a precedência é a mesma definida para NEGATIVE */
-    | MINUS Expr %prec NEGATIVE { $$ = new ParserVal(-$2.dval); }
+    | MINUS Expr %prec NEGATIVE
+    | LPARENTH Expr RPARENTH
     | MethodInvocation
-    | LPARENTH Expr RPARENTH { $$ = $2; }
-    | Number { $$ = $1; }
-    | IDENTIFIER { $$ = $1; }
+    | Number
+    | IDENTIFIER %prec LOWER
  ;
 Instantiation: 
     NEW_KW IDENTIFIER LPARENTH OptArgList RPARENTH
 ;
 MethodInvocation: 
-    IDENTIFIER LPARENTH OptArgList RPARENTH
+    IDENTIFIER LPARENTH OptArgList RPARENTH %prec GREATER
 ;
 Number: 
     LONG_LITERAL
@@ -167,12 +173,6 @@ Number:
 ;
 LogicalExpr:
     Expr LogicalOperator Expr
-;
-Operator:
-    PLUS
-    | MINUS
-    | ASTERISK
-    | DIV
 ;
 LogicalOperator:
     NE
