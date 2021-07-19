@@ -1,86 +1,115 @@
-/*
-BYACC/J = YACC for Java
-http://byaccj.sourceforge.net/
-==File structure==
-DECLARATIONS
-%%
-ACTIONS
-%%
-CODE
-==Running==
-yacc -J -v src/parser/grammar.y
-*/
+%language "Java"
 
-%{
+%define api.parser.class {Parser}
+%define api.parser.public
+%define api.package {src.parser}
+%define api.value.type {Token}
 
-import java.lang.Math;
-import java.io.*;
-import src.lexer.Lexer;
-import src.token.*;
-%}
+%define parse.error verbose
 
-/* YACC Declarations */
+%file-prefix "Parser"
+
+%code imports {
+  import java.lang.Math;
+  import java.io.*;
+  import src.lexer.YYLexer;
+  import src.token.*;
+}
+
+%code {
+    /* lexer is created in the constructor */
+    public Parser(Reader r) {
+        yylexer = new YYLexer(r);
+    }
+
+    public static void main(String args[]) throws IOException {
+        if (args == null || args.length == 0) {
+            System.out.println("Please specify a file");
+            System.exit(1);
+        }
+        String file = args[0];
+        try {
+            Parser yyparser = new Parser(new FileReader(file));
+            if (!yyparser.parse()) {
+                System.exit(1);
+            }
+        }
+        catch (Exception e) {
+            System.out.println("Unexpected exception:");
+            e.printStackTrace();
+        }
+    }
+}
 
 /* Keywords */
-%token CLASS_KW DOUBLE_KW ELSE_KW FLOAT_KW FOR_KW IF_KW IMPORT_KW INT_KW
-%token LONG_KW NEW_KW PUBLIC_KW RETURN_KW STATIC_KW THROW_KW VOID_KW
+%token <Token> CLASS_KW "class keyword"
+%token <Token> DOUBLE_KW "double keyword"
+%token <Token> ELSE_KW "else keyword"
+%token <Token> FLOAT_KW "float keyword"
+%token <Token> FOR_KW "for keyword"
+%token <Token> IF_KW "if keyword"
+%token <Token> INT_KW "int keyword"
+%token <Token> LONG_KW "long keyword"
+%token <Token> NEW_KW "new keyword"
+%token <Token> PUBLIC_KW "public keyword"
+%token <Token> RETURN_KW "return keyword"
+%token <Token> STATIC_KW "static keyword"
+%token <Token> THROW_KW "throw keyword"
+%token <Token> VOID_KW "void keyword"
 
 /* Operators */
-%token MINUSEQ MINUSMINUS PLUSEQ PLUSPLUS
+%token <Token> MINUSEQ "-="
+%token <Token> MINUSMINUS "--"
+%token <Token> PLUSEQ "+="
+%token <Token> PLUSPLUS "++"
 
 /* Logical Operators */
-%token EQEQ GE LE NE
+%token <Token> EQEQ "=="
+%token <Token> GE ">="
+%token <Token> LE "<="
+%token <Token> NE "!="
 
 /* Java Identifiers */
-%token RT_EXCEPTION STRING_KW
+%token <Token> RT_EXCEPTION "RuntimeException"
+%token <Token> STRING_KW "String"
 
 /* Types */
-%token <obj> DOUBLE_LITERAL
-%token <obj> INTEGER_LITERAL
-%token <obj> LONG_LITERAL
-%token <obj> STRING_LITERAL
-%token <obj> IDENTIFIER
+%token <DoubleLiteral> DOUBLE_LITERAL "double literal"
+%token <IntegerLiteral> INTEGER_LITERAL "integer literal"
+%token <LongLiteral> LONG_LITERAL "long literal"
+%token <StringLiteral> STRING_LITERAL "string literal"
+%token <Identifier> IDENTIFIER "identifier"
 
-// %type <dval> Expr
-// %type <dval> Number
+// %nterm <Double> MathExpr
 
 /* Precedencia cresce de cima pra baixo */
-%left EQEQ '=' GE '>' LE '<' NE
+//%left EQEQ '=' GE '>' LE '<' NE
 %left '-' '+'
 %left '*' '/'
-%left NEGATIVE
+%precedence NEGATIVE 
 
 /* Gramática */
 %%
-
 Program:
     CLASS_KW IDENTIFIER '{' ClassBody '}' { System.out.println("Parsed correctly"); }
 ;
 ClassBody:
-    /* empty string */
-    | OptScopeModifier ClassMember ClassBody
-;
-ClassMember:
-    VariableDeclaration ';'
-    | MethodDeclaration
+    %empty
+    | OptScopeModifier MethodDeclaration ClassBody
 ;
 MethodDeclaration:
-    TypedIdentifier '(' TypedParamList ')' Block
+    TypedIdentifier '(' ParamList ')' Block
 ;
 OptScopeModifier:
-    /* empty string */
-    | PUBLIC_KW OptStaticModifier
+    %empty
+    | PUBLIC_KW STATIC_KW
 ;
-OptStaticModifier: 
-    /* empty string */
-    | STATIC_KW
-;
-TypedParamList:
+ParamList:
     TypedIdentifier
-    | TypedIdentifier ',' TypedParamList
+    | TypedIdentifier ',' ParamList
 ;
 OptArgList:
-    /* empty string */
+    %empty
     | ArgList
 ;
 ArgList:
@@ -91,74 +120,121 @@ Block:
     '{' StmtList '}'
 ;
 StmtList:
-    /* empty string */
+    %empty
     | Stmt StmtList
 ;
 Stmt:
-    VariableDeclaration ';'
+    VariableDeclarations ';'
     | IfStmt
     | ForStmt
     | AssignmentStmt ';'
     | ExprStmt ';'
-    | ThrowStmt
-    | ReturnStmt
+    | ThrowStmt ';'
+    | ReturnStmt ';'
 ;
-VariableDeclaration:
+VariableDeclarations:
     TypedIdentifier OptVariableInitialization
+    | DataType MultipleVariableDeclaration
+;
+MultipleVariableDeclaration:
+    IDENTIFIER OptVariableInitialization
+    | IDENTIFIER OptVariableInitialization ',' MultipleVariableDeclaration 
 ;
 OptVariableInitialization:
-    /* empty string */
+    %empty
     | AssignmentOperator ExprStmt
 ;
 IfStmt:
     IF_KW '(' LogicalExpr ')' Block OptElse
 ;
 OptElse:
-    /* empty string */
+    %empty
     | ELSE_KW Block
 ;
 ForStmt:
     FOR_KW '(' ForAssignment ';' LogicalExpr ';' IncrementStmt ')' Block
 ;
 ForAssignment:
-    VariableDeclaration
+    VariableDeclarations
     | AssignmentStmt
 ;
 AssignmentStmt:
-    IDENTIFIER AssignmentOperator ExprStmt
+    IDENTIFIER OptArrayAcess AssignmentOperator ExprStmt
 ;
 IncrementStmt:
     IDENTIFIER UnaryOperator
     | UnaryOperator IDENTIFIER
 ;
 ThrowStmt: 
-    THROW_KW NEW_KW RT_EXCEPTION
+    THROW_KW NEW_KW RT_EXCEPTION '(' ArgList ')'
 ;
 ReturnStmt:
     RETURN_KW ExprStmt
 ;
 ExprStmt: 
-    Expr
-    | Instantiation
+    MathExpr
+    | ClassInstantiation
+    | ArrayDeclaration
 ;
-Expr: 
-    Expr '+' Expr
-    | Expr '-' Expr
-    | Expr '*' Expr
-    | Expr '/' Expr     // { if($3 == 0.0) yyerror("divide by zero"); else $$ = $1 / $3; }
+MathExpr: 
+    MathExpr '+' MathExpr
+    | MathExpr '-' MathExpr
+    | MathExpr '*' MathExpr
+    | MathExpr '/' MathExpr
 
     /* Define que a precedência é a mesma definida para NEGATIVE */
-    | '-' Expr %prec NEGATIVE
-    | '(' Expr ')'
-    | MethodInvocation
+    | '-' MathExpr %prec NEGATIVE
+    | '(' MathExpr ')'
+    | Casting MathExpr
+    | Evaluable
+;
+Casting:
+    '(' DataType ')'
+;
+Evaluable:
+    MethodInvocation
+    | IDENTIFIER OptNestedIdentifier OptArrayAcess
     | Number
-    | IDENTIFIER
- ;
-Instantiation: 
+    | STRING_LITERAL
+;
+OptArrayAcess:
+    %empty
+    | '[' Evaluable ']' OptArrayAcess
+;
+ClassInstantiation: 
     NEW_KW IDENTIFIER '(' OptArgList ')'
 ;
+ArrayDeclaration:
+    NEW_KW DataType OptArrayInitialization
+;
+OptArrayInitialization:
+    %empty
+    | '{' ArgList '}'
+;
 MethodInvocation: 
-    IDENTIFIER '(' OptArgList ')'
+    IDENTIFIER OptNestedIdentifier '(' OptArgList ')'
+;
+DataType:
+    DOUBLE_KW OptBrackets
+    | FLOAT_KW OptBrackets
+    | INT_KW OptBrackets
+    | LONG_KW OptBrackets
+    | STRING_KW OptBrackets
+    | VOID_KW
+    | IDENTIFIER
+;
+OptEvaluable:
+    %empty
+    | Evaluable
+;
+OptNestedIdentifier:
+    %empty
+    | '.' IDENTIFIER OptNestedIdentifier
+;
+OptBrackets:
+    %empty
+    | '[' OptEvaluable ']'
+    | '[' OptEvaluable ']' '[' OptEvaluable ']'
 ;
 Number: 
     LONG_LITERAL
@@ -166,7 +242,7 @@ Number:
     | DOUBLE_LITERAL
 ;
 LogicalExpr:
-    Expr LogicalOperator Expr
+    MathExpr LogicalOperator MathExpr
 ;
 LogicalOperator:
     NE
@@ -188,65 +264,5 @@ UnaryOperator:
 TypedIdentifier:
     DataType IDENTIFIER
 ;
-DataType:
-    DOUBLE_KW OptBrackets
-    | FLOAT_KW OptBrackets
-    | INT_KW OptBrackets
-    | LONG_KW OptBrackets
-    | STRING_KW OptBrackets
-    | VOID_KW
-;
-OptBrackets:
-    /* empty string */
-    | '[' ']'
-    | '[' ']' '[' ']'
-;
 
 %%
-/* a reference to the lexer object */
-private Lexer lexer;
-
-/* setter for token's semantic value */
-public void setYylval(ParserVal yylval) {
-    this.yylval = yylval;
-}
-
-/* interface to the lexer */
-private int yylex () {
-    int yyl_return = -1;
-    try {
-        yyl_return = lexer.yylex();
-    }
-    catch (IOException e) {
-        System.err.println("IO error :"+e);
-    }
-    return yyl_return;
-}
-
-/* error reporting */
-public void yyerror (String error) {
-    System.err.println ("Error: " + error + " at line " + lexer.getLine() + " column " + lexer.getColumn());
-    System.err.println ("Text: " + lexer.yytext());
-}
-
-/* lexer is created in the constructor */
-public Parser(Reader r) {
-    lexer = new Lexer(r, this);
-}
-
-  /* main function to start the parser */
-public static void main(String args[]) throws IOException {
-    if (args == null || args.length == 0) {
-        System.out.println("Please specify a file");
-        System.exit(1);
-    }
-    String file = args[0];
-    try {
-        Parser yyparser = new Parser(new FileReader(file));
-        yyparser.yyparse();
-    }
-    catch (Exception e) {
-        System.out.println("Unexpected exception:");
-        e.printStackTrace();
-    }
-}

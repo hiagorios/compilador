@@ -142,18 +142,7 @@ class Weierstrass {
     // randômica, adotando-se um seed de 13 para R e um seed de
     // 10^6 para a função Q, ou seja, a mesma função é usada para ambas,
     // mudando-se apenas os argumentos passados como parâmetros.
-    static double[][] cocoRandUniforme(int dim, long inseed) {
-        // if (inseed == 13) {
-        // return new double[][]{
-        // new double[]{0.1, 0.2},
-        // new double[]{0.3, 0.4},
-        // };
-        // } else {
-        // return new double[][]{
-        // new double[]{0.9, 0.8},
-        // new double[]{0.7, 0.6},
-        // };
-        // }
+    double[][] cocoRandUniforme(int dim, long inseed) {
 
         double[][] r = new double[dim][dim];
 
