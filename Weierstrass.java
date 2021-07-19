@@ -158,25 +158,30 @@ class Weierstrass {
         long aktrand;
         int i;
 
-        if (inseed < 0)
+        if (inseed < 0) {
             inseed = -inseed;
-        if (inseed < 1)
+        }
+        if (inseed < 1) {
             inseed = 1;
+        }
         aktseed = inseed;
         for (i = 39; i >= 0; i--) {
             tmp = (int) Math.floor((double) aktseed / (double) 127773);
             aktseed = 16807 * (aktseed - tmp * 127773L) - 2836L * tmp;
-            if (aktseed < 0)
+            if (aktseed < 0) {
                 aktseed = aktseed + 2147483647;
-            if (i < 32)
+            }
+            if (i < 32) {
                 rgrand[i] = aktseed;
+            }
         }
         aktrand = rgrand[0];
         for (i = 0; i < dim; i++) {
             tmp = (int) Math.floor((double) aktseed / (double) 127773);
             aktseed = 16807 * (aktseed - tmp * 127773L) - 2836L * tmp;
-            if (aktseed < 0)
+            if (aktseed < 0) {
                 aktseed = aktseed + 2147483647;
+            }
             tmp = (int) Math.floor((double) aktrand / (double) 67108865);
             aktrand = rgrand[tmp];
             rgrand[tmp] = aktseed;

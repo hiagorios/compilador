@@ -1,3 +1,5 @@
+/* Using GNU Bison 3.7.6  */
+
 %language "Java"
 
 %define api.parser.class {Parser}
@@ -10,7 +12,6 @@
 %file-prefix "Parser"
 
 %code imports {
-  import java.lang.Math;
   import java.io.*;
   import src.lexer.YYLexer;
   import src.token.*;
@@ -83,38 +84,25 @@
 // %nterm <Double> MathExpr
 
 /* Precedencia cresce de cima pra baixo */
-//%left EQEQ '=' GE '>' LE '<' NE
 %left '-' '+'
 %left '*' '/'
 %precedence NEGATIVE 
 
 /* Gramática */
 %%
-Program:
-    CLASS_KW IDENTIFIER '{' ClassBody '}' { System.out.println("Parsed correctly"); }
+Class:
+    CLASS_KW IDENTIFIER '{' ClassBody '}' { System.out.println("Parsing finish"); }
 ;
 ClassBody:
     %empty
     | OptScopeModifier MethodDeclaration ClassBody
 ;
 MethodDeclaration:
-    TypedIdentifier '(' ParamList ')' Block
+    IdentifierTyping IDENTIFIER '(' ParamList ')' Block
 ;
 OptScopeModifier:
     %empty
     | PUBLIC_KW STATIC_KW
-;
-ParamList:
-    TypedIdentifier
-    | TypedIdentifier ',' ParamList
-;
-OptArgList:
-    %empty
-    | ArgList
-;
-ArgList:
-    ExprStmt
-    | ExprStmt ',' ArgList
 ;
 Block:
     '{' StmtList '}'
@@ -124,7 +112,7 @@ StmtList:
     | Stmt StmtList
 ;
 Stmt:
-    VariableDeclarations ';'
+    VariableDeclaration ';'
     | IfStmt
     | ForStmt
     | AssignmentStmt ';'
@@ -132,13 +120,12 @@ Stmt:
     | ThrowStmt ';'
     | ReturnStmt ';'
 ;
-VariableDeclarations:
-    TypedIdentifier OptVariableInitialization
-    | DataType MultipleVariableDeclaration
+VariableDeclaration:
+    IdentifierTyping IDENTIFIER OptVariableInitialization OptNestedVariableDeclaration
 ;
-MultipleVariableDeclaration:
-    IDENTIFIER OptVariableInitialization
-    | IDENTIFIER OptVariableInitialization ',' MultipleVariableDeclaration 
+OptNestedVariableDeclaration:
+    %empty
+    | ',' IDENTIFIER OptVariableInitialization OptNestedVariableDeclaration 
 ;
 OptVariableInitialization:
     %empty
@@ -155,15 +142,15 @@ ForStmt:
     FOR_KW '(' ForAssignment ';' LogicalExpr ';' IncrementStmt ')' Block
 ;
 ForAssignment:
-    VariableDeclarations
+    VariableDeclaration
     | AssignmentStmt
 ;
 AssignmentStmt:
-    IDENTIFIER OptArrayAcess AssignmentOperator ExprStmt
+    NestedIdentifier AssignmentOperator ExprStmt
 ;
 IncrementStmt:
-    IDENTIFIER UnaryOperator
-    | UnaryOperator IDENTIFIER
+    NestedIdentifier UnaryOperator
+    | UnaryOperator NestedIdentifier
 ;
 ThrowStmt: 
     THROW_KW NEW_KW RT_EXCEPTION '(' ArgList ')'
@@ -175,6 +162,7 @@ ExprStmt:
     MathExpr
     | ClassInstantiation
     | ArrayDeclaration
+    | STRING_LITERAL
 ;
 MathExpr: 
     MathExpr '+' MathExpr
@@ -185,64 +173,79 @@ MathExpr:
     /* Define que a precedência é a mesma definida para NEGATIVE */
     | '-' MathExpr %prec NEGATIVE
     | '(' MathExpr ')'
-    | Casting MathExpr
+    /* Casting */
+    | '(' DataType ')' MathExpr
     | Evaluable
-;
-Casting:
-    '(' DataType ')'
 ;
 Evaluable:
     MethodInvocation
-    | IDENTIFIER OptNestedIdentifier OptArrayAcess
+    | NestedIdentifier
     | Number
-    | STRING_LITERAL
 ;
-OptArrayAcess:
+OptIndexing:
     %empty
-    | '[' Evaluable ']' OptArrayAcess
+    | '[' MathExpr ']' OptIndexing
+;
+OptMathExpr:
+    %empty
+    | MathExpr
+;
+OptArrayLength:
+    '[' OptMathExpr ']'
+    | '[' OptMathExpr ']' OptArrayLength
 ;
 ClassInstantiation: 
     NEW_KW IDENTIFIER '(' OptArgList ')'
 ;
 ArrayDeclaration:
-    NEW_KW DataType OptArrayInitialization
+    NEW_KW DataType OptArrayLength OptArrayInitialization
 ;
 OptArrayInitialization:
     %empty
     | '{' ArgList '}'
 ;
 MethodInvocation: 
-    IDENTIFIER OptNestedIdentifier '(' OptArgList ')'
+    NestedIdentifier '(' OptArgList ')'
 ;
-DataType:
-    DOUBLE_KW OptBrackets
-    | FLOAT_KW OptBrackets
-    | INT_KW OptBrackets
-    | LONG_KW OptBrackets
-    | STRING_KW OptBrackets
-    | VOID_KW
-    | IDENTIFIER
+LogicalExpr:
+    MathExpr LogicalOperator MathExpr
 ;
-OptEvaluable:
+OptArgList:
     %empty
-    | Evaluable
+    | ArgList
 ;
-OptNestedIdentifier:
-    %empty
-    | '.' IDENTIFIER OptNestedIdentifier
+ParamList:
+    IdentifierTyping IDENTIFIER
+    | IdentifierTyping IDENTIFIER ',' ParamList
+;
+ArgList:
+    ExprStmt
+    | ExprStmt ',' ArgList
+;
+NestedIdentifier:
+    IDENTIFIER OptIndexing
+    | IDENTIFIER OptIndexing '.' NestedIdentifier
+;
+IdentifierTyping:
+    DataType OptBrackets
 ;
 OptBrackets:
     %empty
-    | '[' OptEvaluable ']'
-    | '[' OptEvaluable ']' '[' OptEvaluable ']'
+    | '[' ']' OptBrackets
+;
+DataType:
+    DOUBLE_KW
+    | FLOAT_KW
+    | INT_KW
+    | LONG_KW
+    | STRING_KW
+    | VOID_KW
+    | IDENTIFIER
 ;
 Number: 
     LONG_LITERAL
     | INTEGER_LITERAL
     | DOUBLE_LITERAL
-;
-LogicalExpr:
-    MathExpr LogicalOperator MathExpr
 ;
 LogicalOperator:
     NE
@@ -260,9 +263,6 @@ AssignmentOperator:
 UnaryOperator:
     PLUSPLUS
     | MINUSMINUS
-;
-TypedIdentifier:
-    DataType IDENTIFIER
 ;
 
 %%

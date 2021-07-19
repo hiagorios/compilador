@@ -5,6 +5,7 @@ import src.parser.Parser;
 
 /**
   Classe YYLexer para a disciplina de compiladores da Universidade Estadual de Santa Cruz (UESC)
+  JFlex 1.8.2
 */
 %%
 
@@ -41,7 +42,7 @@ import src.parser.Parser;
   /* error reporting */
   @Override
   public void yyerror(String msg) {
-    System.err.println("Error: " + msg + " at line " + (yyline + 1) + " column " + yycolumn);
+    System.err.println("Error: " + msg + " at line " + (yyline + 1) + " column " + (yycolumn+1));
   }
 
   private Token keyword(TokenType type) {
