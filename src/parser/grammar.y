@@ -99,10 +99,12 @@ ClassBody:
 ;
 MethodDeclaration:
     IdentifierTyping IDENTIFIER '(' ParamList ')' Block
+    | error Block
 ;
 OptScopeModifier:
     %empty
     | PUBLIC_KW STATIC_KW
+    | error DataType
 ;
 Block:
     '{' StmtList '}'
@@ -110,15 +112,16 @@ Block:
 StmtList:
     %empty
     | Stmt StmtList
+    | IfStmt StmtList
+    | ForStmt StmtList
 ;
 Stmt:
     VariableDeclaration ';'
-    | IfStmt
-    | ForStmt
     | AssignmentStmt ';'
     | ExprStmt ';'
     | ThrowStmt ';'
     | ReturnStmt ';'
+    | error ';'
 ;
 VariableDeclaration:
     IdentifierTyping IDENTIFIER OptVariableInitialization OptNestedVariableDeclaration
@@ -133,6 +136,7 @@ OptVariableInitialization:
 ;
 IfStmt:
     IF_KW '(' LogicalExpr ')' Block OptElse
+    | IF_KW '(' error ')' Block OptElse
 ;
 OptElse:
     %empty
@@ -140,6 +144,7 @@ OptElse:
 ;
 ForStmt:
     FOR_KW '(' ForAssignment ';' LogicalExpr ';' IncrementStmt ')' Block
+    | FOR_KW '(' error ';' error ';' error ')' Block
 ;
 ForAssignment:
     VariableDeclaration

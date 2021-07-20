@@ -13,7 +13,3 @@ clean:
 	rm -rf out;
 	cd src/lexer; rm -f YYLexer.java YYLexer.java~;
 	cd src/parser; rm -f Parser.java Parser.output
-
-# parse: Parser.java
-# 	javac -d out src/parser/Parser.java;
-# 	java out/src/parser/Parser.class Weierstrass.java
