@@ -1,4 +1,6 @@
+# JFlex 1.8.2
 JFLEX  = jflex
+# GNU Bison 3.7.6
 BISON = bison -v -t -Wall -Wother
 
 generate: Lexer.java Parser.java
